@@ -5,6 +5,7 @@ mcp.json
 !.env.example
 .data/
 node_modules/
+.vercel
 benchmark-results/
 
 clip-*.wav
@@ -14,3 +15,4 @@ clip-*.pcm
 *.m4a
 *.webm
 *.pcm
+.env*

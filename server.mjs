@@ -12,7 +12,7 @@ import {createAccounts} from './lib/accounts.mjs';
 import {billingConfigured,checkout,verifyStripeSignature,applyBillingEvent} from './lib/billing.mjs';
 import { quranAvailable, matchQuran, hadithReview,normalizeArabic } from './lib/quran.mjs';
 const root=path.dirname(fileURLToPath(import.meta.url));
-const dataDir=process.env.MINBAR_DATA_DIR||path.join(root,'.data');await mkdir(path.join(dataDir,'recordings'),{recursive:true});
+const dataDir=process.env.MINBAR_DATA_DIR||(process.env.VERCEL?'/tmp/minbar':path.join(root,'.data'));await mkdir(path.join(dataDir,'recordings'),{recursive:true});
 const accounts=await createAccounts(dataDir);
 const storePath=path.join(dataDir,'sessions.json');let sessions={};
 try{sessions=JSON.parse(await readFile(storePath,'utf8'));if(!sessions||typeof sessions!=='object'||Array.isArray(sessions))throw new Error('Invalid local session store.');}catch(error){if(error.code!=='ENOENT')throw new Error('Local session store is corrupt or inaccessible; refusing to reset it.');}
@@ -109,8 +109,9 @@ const server=http.createServer(async(req,res)=>{
   const relative=decoded==='/'?'index.html':decoded.replace(/^\//,'');const file=path.resolve(root,'public',relative);if(!file.startsWith(path.join(root,'public')+path.sep))throw fail('Invalid path.',400);const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.webp':'image/webp'};return send(res,200,await readFile(file),types[path.extname(file)]||'application/octet-stream');
  }catch(e){if(!res.headersSent)send(res,e.status||(e.code==='ENOENT'?404:500),{error:e.status?e.message:'Request failed.'});else res.end();}
 });
-server.listen(Number(process.env.PORT)||4310,localDevelopment?'127.0.0.1':process.env.HOST||'127.0.0.1',()=>console.log(`Minbar Live at http://${process.env.HOST||'127.0.0.1'}:${process.env.PORT||4310} — live API ${liveAvailable?'configured':'disabled'}`));
-export {server};
+if(!process.env.VERCEL)server.listen(Number(process.env.PORT)||4310,localDevelopment?'127.0.0.1':process.env.HOST||'127.0.0.1',()=>console.log(`Minbar Live at http://${process.env.HOST||'127.0.0.1'}:${process.env.PORT||4310} — live API ${liveAvailable?'configured':'disabled'}`));
+const handler=(req,res)=>server.emit('request',req,res);
+export {server,handler};
 
 
 
