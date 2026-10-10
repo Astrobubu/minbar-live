@@ -18,7 +18,7 @@ let view = 'home';
 let role = 'imam';
 let stream;
 let rec;
-let hostKey = '';
+let hostKey = localStorage.getItem('minbar-host-key') || '';
 let archiveRecording = false;
 let listening = false;
 let roomLocation = null;
@@ -49,8 +49,31 @@ const act = (fn) => async () => {
   try { await fn(); } catch (err) { toast(err.message); }
 };
 
-async function api(path, options = {}) {
-  if ($('#host-key')) hostKey = $('#host-key').value || hostKey;
+const needsHostKey = (message) => /host access key/i.test(message || '');
+
+function setHostKey(value) {
+  hostKey = value;
+  if (value) localStorage.setItem('minbar-host-key', value);
+  else localStorage.removeItem('minbar-host-key');
+}
+
+function askHostKey(note) {
+  const dialog = $('#key-dialog');
+  $('#key-note').textContent = note || 'Recording and translation need the host key for this server. It is saved on this device only.';
+  $('#key-input').value = '';
+  dialog.showModal();
+  return new Promise((resolve) => {
+    dialog.onclose = () => {
+      const value = $('#key-input').value.trim();
+      if (dialog.returnValue === 'save' && value) {
+        setHostKey(value);
+        resolve(value);
+      } else resolve(null);
+    };
+  });
+}
+
+async function api(path, options = {}, retried = false) {
   const response = await fetch(path, {
     ...options,
     headers: {
@@ -61,6 +84,10 @@ async function api(path, options = {}) {
     }
   });
   const data = await response.json();
+  if (!response.ok && response.status === 401 && needsHostKey(data.error) && !retried && !config.localDevelopmentAvailable) {
+    if (await askHostKey(hostKey ? 'That host key was not accepted. Enter the key set on the server.' : undefined)) return api(path, options, true);
+    throw Error('A host key is needed to record or translate.');
+  }
   if (!response.ok) throw Error(data.error || 'Request failed');
   return data;
 }
@@ -104,13 +131,18 @@ function controls() {
         <label class="check"><input id="archive-create" type="checkbox" disabled> Save the microphone audio on this server</label>
         <button type="button" id="location" class="quiet full">Add approximate venue location</button>
         <p class="hint" id="location-status">Location stays off until you add it. Hall sessions only.</p>
-        ${config.localDevelopmentAvailable ? '' : `<label class="field" for="host-key">Host access key</label><input id="host-key" type="password" autocomplete="off" placeholder="Configured host key"><p class="hint">Kept in this tab only.</p>`}
+        ${hostKeyButton()}
       </details>
       <div class="stack">
         <button type="button" id="create" class="primary full" ${blocked ? 'disabled' : ''}>Start recording</button>
       </div>
       <p class="hint">${blocked ? 'This server has no OpenAI project key yet. Add OPENAI_API_KEY and refresh.' : 'Audio is sent to OpenAI for transcription. A second pass may revise the wording. Translation is not included until you ask for it.'}</p>
     </aside>`;
+}
+
+function hostKeyButton() {
+  if (config.localDevelopmentAvailable) return '';
+  return `<button type="button" id="change-key" class="quiet full">${hostKey ? 'Host key saved on this device · Change' : 'Enter host key'}</button>`;
 }
 
 function controlBar() {
@@ -132,9 +164,6 @@ function controlBar() {
 }
 
 function deskMore() {
-  const hostKeyField = !config.localDevelopmentAvailable
-    ? `<label class="field" for="host-key">Host access key</label><input id="host-key" type="password" autocomplete="off" placeholder="Configured host key" value="${e(hostKey)}"><p class="hint">Kept in this tab only.</p>`
-    : '';
   return `<details class="desk-more" id="desk-more" ${moreOpen ? 'open' : ''}>
     <summary>Full transcript and tools</summary>
     <div class="tools">
@@ -147,7 +176,7 @@ function deskMore() {
     </div>
     <div class="transcript" id="transcript">${transcriptMarkup()}</div>
     ${session.isDemo ? '<p class="hint">This is an old sample room. It cannot take a microphone.</p>' : `<div class="desk-input">
-      ${hostKeyField}
+      ${hostKeyButton()}
       <label class="field" for="manual">Type a passage</label>
       <textarea id="manual" placeholder="Arabic or English, as spoken"></textarea>
       <button type="button" id="send" class="secondary full">Add to transcript</button>
@@ -497,7 +526,7 @@ function bind() {
     if (listening) segments.filter((item) => item.status === 'double-checked' || session.isDemo).forEach(speak);
     render();
   });
-  if ($('#host-key')) $('#host-key').oninput = () => { hostKey = $('#host-key').value; };
+  on('#change-key', async () => { if (await askHostKey()) render(); });
   if ($('#audio')) {
     $('#audio').onchange = act(async () => {
       const file = $('#audio').files[0];
@@ -802,8 +831,9 @@ async function beginCapture(saveAudio) {
   render();
   try {
     if (config.localDevelopmentAvailable) await api('/api/local-access', { method: 'POST', body: '{}' });
+    else if (!hostKey && !(await askHostKey())) throw Error('A host key is needed to record.');
     const { startTranscription } = await import('./realtime.js');
-    rec = await startTranscription({
+    const start = () => startTranscription({
       sessionId: session.id,
       ownerToken: token(),
       hostKey,
@@ -813,6 +843,13 @@ async function beginCapture(saveAudio) {
       onStatus: (status) => { recordingStatus = status; if ($('#record-status')) $('#record-status').textContent = status; },
       onTranscript: () => {}
     });
+    try {
+      rec = await start();
+    } catch (err) {
+      if (config.localDevelopmentAvailable || !needsHostKey(err.message)) throw err;
+      if (!(await askHostKey('That host key was not accepted. Enter the key set on the server.'))) throw Error('A host key is needed to record.');
+      rec = await start();
+    }
     recordingStatus = 'Listening';
   } catch (err) {
     recordingStatus = err.message;

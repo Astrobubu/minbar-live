@@ -42,6 +42,18 @@
     <input id="join-url" readonly aria-label="Room link">
     <button type="button" id="copy-link" class="primary">Copy link</button>
   </dialog>
+  <dialog id="key-dialog">
+    <form method="dialog" id="key-form">
+      <p class="kicker">Imam</p>
+      <h2>Host key</h2>
+      <p class="hint" id="key-note">Recording and translation need the host key for this server. It is saved on this device only.</p>
+      <input id="key-input" type="password" autocomplete="current-password" aria-label="Host key" required>
+      <div class="row">
+        <button type="submit" value="save" class="primary">Save key</button>
+        <button type="submit" value="cancel" class="quiet" formnovalidate>Cancel</button>
+      </div>
+    </form>
+  </dialog>
   <script type="module" src="/app.js"></script>
 </body>
 </html>
