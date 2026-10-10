@@ -1,3 +1,5 @@
+import { t, uiLang, applyUiLang, toggleUiLang } from './i18n.mjs';
+
 const $ = (selector) => document.querySelector(selector);
 const e = (value) => String(value ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -37,7 +39,8 @@ document.documentElement.style.setProperty('--scale', textScale);
 const owners = () => JSON.parse(localStorage.getItem('minbar-rooms') || '{}');
 const token = () => owners()[session?.id]?.ownerToken;
 const isHost = () => Boolean(session && (token() || accountRoomIds.has(session.id)));
-const languageName = (code) => (code === 'en' ? 'English' : 'Arabic');
+const languageName = (code) => t(code === 'en' ? 'English' : 'Arabic');
+let connectionState = 'Connecting';
 const targetLanguage = () => session?.language || (session?.sourceLanguage === 'en' ? 'ar' : 'en');
 function toast(message) {
   const node = $('#toast');
@@ -59,7 +62,7 @@ function setHostKey(value) {
 
 function askHostKey(note) {
   const dialog = $('#key-dialog');
-  $('#key-note').textContent = note || 'Recording and translation need the host key for this server. It is saved on this device only.';
+  $('#key-note').textContent = t(note || 'Recording and translation need the host key for this server. It is saved on this device only.');
   $('#key-input').value = '';
   dialog.showModal();
   return new Promise((resolve) => {
@@ -86,105 +89,105 @@ async function api(path, options = {}, retried = false) {
   const data = await response.json();
   if (!response.ok && response.status === 401 && needsHostKey(data.error) && !retried && !config.localDevelopmentAvailable) {
     if (await askHostKey(hostKey ? 'That host key was not accepted. Enter the key set on the server.' : undefined)) return api(path, options, true);
-    throw Error('A host key is needed to record or translate.');
+    throw Error(t('A host key is needed to record or translate.'));
   }
-  if (!response.ok) throw Error(data.error || 'Request failed');
+  if (!response.ok) throw Error(data.error || t('Request failed'));
   return data;
 }
 
 function statusLine() {
-  if (session?.status === 'ended') return 'Session ended';
-  if (session?.isDemo) return 'Saved sample. Start a new room for a microphone.';
-  return recordingStatus;
+  if (session?.status === 'ended') return t('Session ended');
+  if (session?.isDemo) return t('Saved sample. Start a new room for a microphone.');
+  return t(recordingStatus);
 }
 
 function liveLabel() {
-  if (!session) return 'Ready';
-  if (session.status === 'ended') return 'Ended';
-  if (rec) return 'Listening';
-  if (session.status === 'live') return 'Live';
-  return 'Ready';
+  if (!session) return t('Ready');
+  if (session.status === 'ended') return t('Ended');
+  if (rec) return t('Listening');
+  if (session.status === 'live') return t('Live');
+  return t('Ready');
 }
 
 function controls() {
   const blocked = !config.liveAvailable;
   return `<aside class="desk">
-      <p class="kicker">Imam</p>
-      <h2>Start a recording</h2>
-      <p class="lede">This desk transcribes what is spoken. Translation is a separate step, during or after the sermon.</p>
+      <p class="kicker">${t('Imam')}</p>
+      <h2>${t('Start a recording')}</h2>
+      <p class="lede">${t('This desk transcribes what is spoken. Translation is a separate step, during or after the sermon.')}</p>
       <fieldset class="choice">
-        <legend>Spoken language</legend>
-        <label class="choice-card"><input type="radio" name="source" value="ar" checked><span><b lang="ar">العربية</b><small>transcribed in Arabic</small></span></label>
-        <label class="choice-card"><input type="radio" name="source" value="en"><span><b>English</b><small>transcribed in English</small></span></label>
+        <legend>${t('Spoken language')}</legend>
+        <label class="choice-card"><input type="radio" name="source" value="ar" checked><span><b lang="ar">العربية</b><small>${t('transcribed in Arabic')}</small></span></label>
+        <label class="choice-card"><input type="radio" name="source" value="en"><span><b lang="en">English</b><small>${t('transcribed in English')}</small></span></label>
       </fieldset>
-      <label class="field" for="title">Session name</label>
-      <input id="title" placeholder="Friday sermon" maxlength="120">
+      <label class="field" for="title">${t('Session name')}</label>
+      <input id="title" placeholder="${t('Friday sermon')}" maxlength="120">
       <fieldset class="segmented">
-        <legend>Who else can watch</legend>
-        <label><input type="radio" name="kind" value="venue" checked><span>Hall and phones</span></label>
-        <label><input type="radio" name="kind" value="personal"><span>This desk only</span></label>
+        <legend>${t('Who else can watch')}</legend>
+        <label><input type="radio" name="kind" value="venue" checked><span>${t('Hall and phones')}</span></label>
+        <label><input type="radio" name="kind" value="personal"><span>${t('This desk only')}</span></label>
       </fieldset>
-      <p class="hint" id="privacy-copy">The hall screen and a phone QR can open the transcript. They cannot control the recording.</p>
+      <p class="hint" id="privacy-copy">${t('The hall screen and a phone QR can open the transcript. They cannot control the recording.')}</p>
       <details>
-        <summary>Options</summary>
-        ${profiles.length ? `<label class="field" for="profile">Venue or speaker</label><select id="profile"><option value="">No profile</option>${profiles.map((p) => `<option value="${e(p.id)}">${e(p.name)}</option>`).join('')}</select>` : ''}
-        <label class="check"><input id="archive-create" type="checkbox" disabled> Save the microphone audio on this server</label>
-        <button type="button" id="location" class="quiet full">Add approximate venue location</button>
-        <p class="hint" id="location-status">Location stays off until you add it. Hall sessions only.</p>
+        <summary>${t('Options')}</summary>
+        ${profiles.length ? `<label class="field" for="profile">${t('Venue or speaker')}</label><select id="profile"><option value="">${t('No profile')}</option>${profiles.map((p) => `<option value="${e(p.id)}">${e(p.name)}</option>`).join('')}</select>` : ''}
+        <label class="check"><input id="archive-create" type="checkbox" disabled> ${t('Save the microphone audio on this server')}</label>
+        <button type="button" id="location" class="quiet full">${t('Add approximate venue location')}</button>
+        <p class="hint" id="location-status">${t('Location stays off until you add it. Hall sessions only.')}</p>
         ${hostKeyButton()}
       </details>
       <div class="stack">
-        <button type="button" id="create" class="primary full" ${blocked ? 'disabled' : ''}>Start recording</button>
+        <button type="button" id="create" class="primary full" ${blocked ? 'disabled' : ''}>${t('Start recording')}</button>
       </div>
-      <p class="hint">${blocked ? 'This server has no OpenAI project key yet. Add OPENAI_API_KEY and refresh.' : 'Audio is sent to OpenAI for transcription. A second pass may revise the wording. Translation is not included until you ask for it.'}</p>
+      <p class="hint">${t(blocked ? 'This server has no OpenAI project key yet. Add OPENAI_API_KEY and refresh.' : 'Audio is sent to OpenAI for transcription. A second pass may revise the wording. Translation is not included until you ask for it.')}</p>
     </aside>`;
 }
 
 function hostKeyButton() {
   if (config.localDevelopmentAvailable) return '';
-  return `<button type="button" id="change-key" class="quiet full">${hostKey ? 'Host key saved on this device · Change' : 'Enter host key'}</button>`;
+  return `<button type="button" id="change-key" class="quiet full">${t(hostKey ? 'Host key saved on this device · Change' : 'Enter host key')}</button>`;
 }
 
 function controlBar() {
   const status = `<span class="control-status"><i class="dot ${rec ? 'on' : ''}"></i><span id="record-status">${e(statusLine())}</span><span class="meta">· ${e(languageName(session.sourceLanguage))}</span></span>`;
   if (session.isDemo) return `<div class="control-bar">${status}</div>`;
   if (session.status === 'ended') {
-    return `<div class="control-bar">${status}<button type="button" id="new" class="rec-btn start">New recording</button></div>`;
+    return `<div class="control-bar">${status}<button type="button" id="new" class="rec-btn start">${t('New recording')}</button></div>`;
   }
   const translating = Boolean(session.translationEnabled);
   return `<div class="control-bar">
     ${status}
-    ${session.visibility === 'public' ? '<button type="button" id="open-screen" class="secondary">Hall screen</button><button type="button" id="join" class="secondary">Listener QR</button>' : ''}
-    <button type="button" id="${translating ? 'translate-off' : 'translate'}" class="switch ${translating ? 'on' : ''}" role="switch" aria-checked="${translating}">Translate to ${e(languageName(targetLanguage()))}<i class="knob"></i></button>
-    <button type="button" id="end" class="quiet" ${starting ? 'disabled' : ''}>End session</button>
+    ${session.visibility === 'public' ? `<button type="button" id="open-screen" class="secondary">${t('Hall screen')}</button><button type="button" id="join" class="secondary">${t('Listener QR')}</button>` : ''}
+    <button type="button" id="${translating ? 'translate-off' : 'translate'}" class="switch ${translating ? 'on' : ''}" role="switch" aria-checked="${translating}">${e(t('Translate to {lang}', { lang: languageName(targetLanguage()) }))}<i class="knob"></i></button>
+    <button type="button" id="end" class="quiet" ${starting ? 'disabled' : ''}>${t('End session')}</button>
     ${rec
-      ? `<button type="button" id="stop" class="rec-btn" ${starting ? 'disabled' : ''}><i class="dot on"></i>Stop recording</button>`
-      : `<button type="button" id="start" class="rec-btn start" ${starting ? 'disabled' : ''}>Start recording</button>`}
+      ? `<button type="button" id="stop" class="rec-btn" ${starting ? 'disabled' : ''}><i class="dot on"></i>${t('Stop recording')}</button>`
+      : `<button type="button" id="start" class="rec-btn start" ${starting ? 'disabled' : ''}>${t('Start recording')}</button>`}
   </div>`;
 }
 
 function deskMore() {
   return `<details class="desk-more" id="desk-more" ${moreOpen ? 'open' : ''}>
-    <summary>Full transcript and tools</summary>
+    <summary>${t('Full transcript and tools')}</summary>
     <div class="tools">
-      <button type="button" id="original" class="quiet" ${session.isDemo ? 'disabled' : ''}>${originalAudio ? 'Stop original' : 'Original audio'}</button>
-      ${session.translationEnabled ? `<button type="button" id="listen" class="quiet">${listening ? 'Stop voice' : 'Read translation'}</button>` : ''}
-      <button type="button" id="follow" class="quiet">${followLatest ? 'Pause following' : 'Follow latest'}</button>
-      <button type="button" id="export" class="quiet">Export</button>
-      <button type="button" id="insights" class="quiet">Summary</button>
-      ${session.status === 'ended' ? '' : '<button type="button" id="new" class="quiet">New recording</button>'}
+      <button type="button" id="original" class="quiet" ${session.isDemo ? 'disabled' : ''}>${t(originalAudio ? 'Stop original' : 'Original audio')}</button>
+      ${session.translationEnabled ? `<button type="button" id="listen" class="quiet">${t(listening ? 'Stop voice' : 'Read translation')}</button>` : ''}
+      <button type="button" id="follow" class="quiet">${t(followLatest ? 'Pause following' : 'Follow latest')}</button>
+      <button type="button" id="export" class="quiet">${t('Export')}</button>
+      <button type="button" id="insights" class="quiet">${t('Summary')}</button>
+      ${session.status === 'ended' ? '' : `<button type="button" id="new" class="quiet">${t('New recording')}</button>`}
     </div>
     <div class="transcript" id="transcript">${transcriptMarkup()}</div>
-    ${session.isDemo ? '<p class="hint">This is an old sample room. It cannot take a microphone.</p>' : `<div class="desk-input">
+    ${session.isDemo ? `<p class="hint">${t('This is an old sample room. It cannot take a microphone.')}</p>` : `<div class="desk-input">
       ${hostKeyButton()}
-      <label class="field" for="manual">Type a passage</label>
-      <textarea id="manual" placeholder="Arabic or English, as spoken"></textarea>
-      <button type="button" id="send" class="secondary full">Add to transcript</button>
-      <label class="field" for="audio">${session.kind === 'personal' ? 'Upload a recording to keep' : 'Upload audio to transcribe'}</label>
+      <label class="field" for="manual">${t('Type a passage')}</label>
+      <textarea id="manual" placeholder="${t('Arabic or English, as spoken')}"></textarea>
+      <button type="button" id="send" class="secondary full">${t('Add to transcript')}</button>
+      <label class="field" for="audio">${t(session.kind === 'personal' ? 'Upload a recording to keep' : 'Upload audio to transcribe')}</label>
       <input id="audio" type="file" accept="audio/*">
-      <label class="check"><input id="archive-audio" type="checkbox" ${session.kind === 'personal' ? '' : 'disabled'}> Save microphone audio. Available for a private recording only.</label>
-      <p class="hint">Uploaded audio goes to the transcription provider. Saved files follow the server retention period.</p>
-      ${(session.recordings || []).map((r) => `<div class="recording"><span>Audio · ${e(new Date(r.createdAt).toLocaleDateString())}</span><span><button type="button" class="quiet" data-download="${e(r.id)}">Download</button> <button type="button" class="quiet" data-delete="${e(r.id)}">Delete</button></span></div>`).join('')}
+      <label class="check"><input id="archive-audio" type="checkbox" ${session.kind === 'personal' ? '' : 'disabled'}> ${t('Save microphone audio. Available for a private recording only.')}</label>
+      <p class="hint">${t('Uploaded audio goes to the transcription provider. Saved files follow the server retention period.')}</p>
+      ${(session.recordings || []).map((r) => `<div class="recording"><span>${t('Audio')} · ${e(new Date(r.createdAt).toLocaleDateString(uiLang))}</span><span><button type="button" class="quiet" data-download="${e(r.id)}">${t('Download')}</button> <button type="button" class="quiet" data-delete="${e(r.id)}">${t('Delete')}</button></span></div>`).join('')}
     </div>`}
   </details>`;
 }
@@ -197,10 +200,10 @@ function passage(item, { draftItem = false } = {}) {
   const sourceClass = source === 'ar' ? 'arabic' : 'english';
   const targetClass = target === 'ar' ? 'arabic' : 'english';
   const checked = item.status === 'double-checked';
-  const label = draftItem ? 'Draft' : checked ? 'Revised' : 'Live';
-  const citations = (item.citations || []).map((c) => `<a class="citation" ${/^https:\/\//.test(c.sourceUrl || '') ? `href="${e(c.sourceUrl)}" target="_blank" rel="noopener"` : ''}>${e(c.reference)} · ${c.kind === 'quran' ? 'Quran text match' : e(c.matchType || 'Possible match')}<span dir="rtl" lang="ar">${e(c.arabic)}</span><span>A text match is not certainty of attribution.</span></a>`).join('');
+  const label = t(draftItem ? 'Draft' : checked ? 'Revised' : 'Live');
+  const citations = (item.citations || []).map((c) => `<a class="citation" ${/^https:\/\//.test(c.sourceUrl || '') ? `href="${e(c.sourceUrl)}" target="_blank" rel="noopener"` : ''}>${e(c.reference)} · ${c.kind === 'quran' ? t('Quran text match') : e(c.matchType || t('Possible match'))}<span dir="rtl" lang="ar">${e(c.arabic)}</span><span>${t('A text match is not certainty of attribution.')}</span></a>`).join('');
   return `<article class="passage ${draftItem ? 'drafting' : ''}">
-    <header><time>${draftItem ? 'Now' : new Date(item.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</time><span class="tag ${draftItem ? 'draft' : ''}">${label}</span></header>
+    <header><time>${draftItem ? t('Now') : new Date(item.createdAt || Date.now()).toLocaleTimeString(uiLang, { hour: '2-digit', minute: '2-digit' })}</time><span class="tag ${draftItem ? 'draft' : ''}">${label}</span></header>
     <p class="${sourceClass}" lang="${source}" dir="${source === 'ar' ? 'rtl' : 'ltr'}">${e(sourceText)}</p>
     ${session?.translationEnabled && translation ? `<p class="${targetClass}" lang="${target}" dir="${target === 'ar' ? 'rtl' : 'ltr'}">${e(translation)}</p>` : ''}
     ${citations}
@@ -210,10 +213,10 @@ function passage(item, { draftItem = false } = {}) {
 function transcriptMarkup() {
   const body = `${segments.map((item) => passage(item)).join('')}${draft ? passage(draft, { draftItem: true }) : ''}`;
   if (body) return body;
-  if (roomError) return `<div class="waiting"><strong>This room did not open.</strong><p>${e(roomError)}</p></div>`;
+  if (roomError) return `<div class="waiting"><strong>${t('This room did not open.')}</strong><p>${e(roomError)}</p></div>`;
   if (!session) return '';
-  if (session.status === 'ended') return `<div class="waiting"><strong>Nothing was captured.</strong><p>This session has ended.</p></div>`;
-  return `<div class="waiting"><strong>Waiting for speech.</strong><p>Speak in ${languageName(session.sourceLanguage)}. The transcript appears here. Translation stays off until you turn it on.</p></div>`;
+  if (session.status === 'ended') return `<div class="waiting"><strong>${t('Nothing was captured.')}</strong><p>${t('This session has ended.')}</p></div>`;
+  return `<div class="waiting"><strong>${t('Waiting for speech.')}</strong><p>${e(t('Speak in {lang}. The transcript appears here. Translation stays off until you turn it on.', { lang: languageName(session.sourceLanguage) }))}</p></div>`;
 }
 
 function applyRole() {
@@ -269,8 +272,10 @@ function bandMarkup() {
   const target = targetLanguage();
   const latest = [...segments].reverse().find((item) => item.translation);
   return `<div class="band">
-    <span class="band-label">Translation · ${e(languageName(target))}</span>
-    <p lang="${target}" dir="${target === 'ar' ? 'rtl' : 'ltr'}">${latest ? e(latest.translation) : 'Appears after each finished sentence.'}</p>
+    <span class="band-label">${e(t('Translation · {lang}', { lang: languageName(target) }))}</span>
+    ${latest
+      ? `<p lang="${target}" dir="${target === 'ar' ? 'rtl' : 'ltr'}">${e(latest.translation)}</p>`
+      : `<p class="band-wait">${t('Appears after each finished sentence.')}</p>`}
   </div>`;
 }
 
@@ -279,25 +284,25 @@ function stageBody() {
   const lines = subtitleMarkup(role === 'listen' ? 6 : 3, inline);
   if (lines) return `<div class="lines">${lines}</div>${inline ? '' : bandMarkup()}`;
   const ended = session.status === 'ended';
-  const title = ended ? 'This session has ended.'
-    : role !== 'imam' ? 'Waiting for the imam.'
-    : rec ? 'Listening. Start speaking.' : 'Press Start recording.';
+  const title = ended ? t('This session has ended.')
+    : role !== 'imam' ? t('Waiting for the imam.')
+    : t(rec ? 'Listening. Start speaking.' : 'Press Start recording.');
   const note = session.translationEnabled
-    ? `Translation into ${languageName(targetLanguage())} is on.`
-    : role === 'imam' ? 'The words appear here as subtitles the moment they are spoken.' : 'Subtitles appear here as the imam speaks.';
+    ? t('Translation into {lang} is on.', { lang: languageName(targetLanguage()) })
+    : t(role === 'imam' ? 'The words appear here as subtitles the moment they are spoken.' : 'Subtitles appear here as the imam speaks.');
   return `<div class="stage-wait"><strong>${e(title)}</strong><p>${e(note)}</p></div>`;
 }
 
 function pill() {
   const on = role === 'imam' ? Boolean(rec) : session?.status === 'live';
-  const label = role === 'imam' ? liveLabel() : session?.status === 'ended' ? 'Ended' : on ? 'Live' : 'Ready';
+  const label = role === 'imam' ? liveLabel() : t(session?.status === 'ended' ? 'Ended' : on ? 'Live' : 'Ready');
   return `<span id="live-pill" class="pill ${on ? 'live' : ''}">${on ? '<i class="dot on"></i>' : ''}${e(label)}</span>`;
 }
 
 function liveStage(actions = '') {
   return `<section class="live-stage">
     <header class="live-head">
-      <span class="live-title">${e(session.title || 'Minbar')}${role === 'imam' ? ' <small>· Imam desk</small>' : ''}</span>
+      <span class="live-title">${e(session.title || 'Minbar')}${role === 'imam' ? ` <small>· ${t('Imam desk')}</small>` : ''}</span>
       <span class="live-actions">${actions}${pill()}</span>
     </header>
     <div class="live-body" id="live">${stageBody()}</div>
@@ -307,16 +312,18 @@ function liveStage(actions = '') {
 function renderAudience() {
   applyRole();
   if (!session) {
-    $('#main').innerHTML = `<section class="live-stage"><div class="live-body"><div class="stage-wait"><strong>${role === 'screen' ? 'This screen did not open.' : 'These subtitles did not open.'}</strong><p>${e(roomError || (role === 'screen' ? 'Open it from the imam desk.' : 'Scan the QR from the imam desk.'))}</p></div></div></section>`;
+    $('#main').innerHTML = `<section class="live-stage"><div class="live-body"><div class="stage-wait"><strong>${t(role === 'screen' ? 'This screen did not open.' : 'These subtitles did not open.')}</strong><p>${e(roomError || t(role === 'screen' ? 'Open it from the imam desk.' : 'Scan the QR from the imam desk.'))}</p></div></div></section>`;
     return;
   }
+  const toggle = '<button type="button" class="lang-toggle stage-toggle"></button>';
   const sizer = role === 'listen'
-    ? '<span class="sizer"><button type="button" id="smaller" aria-label="Smaller text">A−</button><button type="button" id="bigger" aria-label="Larger text">A+</button></span>'
+    ? `<span class="sizer" dir="ltr"><button type="button" id="smaller" aria-label="${t('Smaller text')}">A−</button><button type="button" id="bigger" aria-label="${t('Larger text')}">A+</button></span>`
     : '';
   const ask = role === 'listen' && !session.translationEnabled
-    ? `<button type="button" id="ask-translation" class="ask-pill"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/></svg>Translate to ${e(languageName(targetLanguage()))}</button>`
+    ? `<button type="button" id="ask-translation" class="ask-pill"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/></svg>${e(t('Translate to {lang}', { lang: languageName(targetLanguage()) }))}</button>`
     : '';
-  $('#main').innerHTML = `${liveStage(sizer)}${ask}`;
+  $('#main').innerHTML = `${liveStage(toggle + sizer)}${ask}`;
+  applyUiLang();
   bind();
 }
 
@@ -336,7 +343,8 @@ function render() {
   if (view === 'profile') return profileView();
   if (view !== 'home') return listView();
   if (!session) {
-    $('#main').innerHTML = `<div class="imam-home"><section class="role-list"><p class="kicker">Three places</p><h1>One sermon, three screens.</h1><article class="role-card"><p class="kicker">1 · Imam</p><h2>This desk</h2><p>Record the sermon here. The words are transcribed as they are spoken.</p></article><article class="role-card"><p class="kicker">2 · Screen</p><h2>The hall</h2><p>A separate full-screen view for the display in the room.</p></article><article class="role-card"><p class="kicker">3 · Listener</p><h2>A phone</h2><p>Someone scans a QR code and reads subtitles on their own screen.</p></article></section>${controls()}</div>`;
+    const roleCard = (kicker, title, text) => `<article class="role-card"><p class="kicker">${t(kicker)}</p><h2>${t(title)}</h2><p>${t(text)}</p></article>`;
+    $('#main').innerHTML = `<div class="imam-home"><section class="role-list"><p class="kicker">${t('Three places')}</p><h1>${t('One sermon, three screens.')}</h1>${roleCard('1 · Imam', 'This desk', 'Record the sermon here. The words are transcribed as they are spoken.')}${roleCard('2 · Screen', 'The hall', 'A separate full-screen view for the display in the room.')}${roleCard('3 · Listener', 'A phone', 'Someone scans a QR code and reads subtitles on their own screen.')}</section>${controls()}</div>`;
   } else $('#main').innerHTML = `<div class="desk-live">${liveStage()}${controlBar()}${deskMore()}</div>`;
   bind();
   const pane = $('#transcript');
@@ -358,7 +366,7 @@ function patchTranscript() {
   const badge = $('#live-pill');
   if (badge) badge.outerHTML = pill();
   const follow = $('#follow');
-  if (follow) follow.textContent = followLatest ? 'Pause following' : 'Follow latest';
+  if (follow) follow.textContent = t(followLatest ? 'Pause following' : 'Follow latest');
 }
 
 const on = (id, fn) => { const node = $(id); if (node) node.onclick = act(fn); };
@@ -366,7 +374,7 @@ const on = (id, fn) => { const node = $(id); if (node) node.onclick = act(fn); }
 function bind() {
   const pane = $('#transcript');
   if (pane && role === 'imam') {
-    const pause = () => { followLatest = false; const follow = $('#follow'); if (follow) follow.textContent = 'Follow latest'; };
+    const pause = () => { followLatest = false; const follow = $('#follow'); if (follow) follow.textContent = t('Follow latest'); };
     pane.addEventListener('wheel', pause, { passive: true });
     pane.addEventListener('touchmove', pause, { passive: true });
   }
@@ -378,7 +386,7 @@ function bind() {
     input.onchange = () => {
       const copy = $('#privacy-copy');
       const save = $('#archive-create');
-      if (copy) copy.textContent = input.value === 'venue' && input.checked ? 'The hall screen and a phone QR can open the transcript. They cannot control the recording.' : 'This recording stays on this desk. No hall screen and no phone QR.';
+      if (copy) copy.textContent = t(input.value === 'venue' && input.checked ? 'The hall screen and a phone QR can open the transcript. They cannot control the recording.' : 'This recording stays on this desk. No hall screen and no phone QR.');
       if (save) save.disabled = document.querySelector('input[name="kind"]:checked')?.value !== 'personal';
     };
   });
@@ -389,16 +397,16 @@ function bind() {
   }
   on('#location', () => navigator.geolocation.getCurrentPosition((position) => {
     roomLocation = { optIn: true, latitude: Math.round(position.coords.latitude * 100) / 100, longitude: Math.round(position.coords.longitude * 100) / 100 };
-    $('#location-status').textContent = 'Approximate location will be stored with a public venue room.';
-  }, () => toast('Location is unavailable. You can still open a room.'), { enableHighAccuracy: false, timeout: 10000 }));
+    $('#location-status').textContent = t('Approximate location will be stored with a public venue room.');
+  }, () => toast(t('Location is unavailable. You can still open a room.')), { enableHighAccuracy: false, timeout: 10000 }));
   on('#create', async () => {
-    if (!config.liveAvailable) throw Error('Add an OpenAI project key on the server, then refresh.');
+    if (!config.liveAvailable) throw Error(t('Add an OpenAI project key on the server, then refresh.'));
     const button = $('#create');
     if (button) button.disabled = true;
     const sourceLanguage = document.querySelector('input[name="source"]:checked')?.value === 'en' ? 'en' : 'ar';
     const kind = document.querySelector('input[name="kind"]:checked')?.value === 'venue' ? 'venue' : 'personal';
     const saveAudio = kind === 'personal' && Boolean($('#archive-create')?.checked);
-    const title = $('#title').value.trim() || 'Live session';
+    const title = $('#title').value.trim() || t('Live session');
     const profileId = $('#profile')?.value || undefined;
     try {
       const created = await api('/api/sessions', {
@@ -538,7 +546,7 @@ function bind() {
       });
       if (data.recording) session.recordings = [...(session.recordings || []), data.recording];
       render();
-      toast('Audio transcribed');
+      toast(t('Audio transcribed'));
     });
   }
   document.querySelectorAll('[data-download]').forEach((button) => {
@@ -546,7 +554,7 @@ function bind() {
   });
   document.querySelectorAll('[data-delete]').forEach((button) => {
     button.onclick = act(async () => {
-      if (!confirm('Delete this audio? The transcript stays.')) return;
+      if (!confirm(t('Delete this audio? The transcript stays.'))) return;
       await api(`/api/sessions/${session.id}/recordings/${button.dataset.delete}`, { method: 'DELETE' });
       session.recordings = session.recordings.filter((item) => item.id !== button.dataset.delete);
       render();
@@ -556,7 +564,7 @@ function bind() {
 
 async function download(path, name) {
   const response = await fetch(path, { headers: token() ? { Authorization: `Bearer ${token()}` } : {} });
-  if (!response.ok) throw Error('Download unavailable');
+  if (!response.ok) throw Error(t('Download unavailable'));
   const link = document.createElement('a');
   link.href = URL.createObjectURL(await response.blob());
   link.download = name;
@@ -628,7 +636,7 @@ function subscribe() {
     patchTranscript();
   });
   stream.addEventListener('audio', (ev) => {
-    try { receiveAudio(JSON.parse(ev.data)); } catch { if ($('#event-status')) $('#event-status').textContent = 'Audio interrupted'; }
+    try { receiveAudio(JSON.parse(ev.data)); } catch { if ($('#event-status')) $('#event-status').textContent = t('Audio interrupted'); }
   });
   stream.addEventListener('snapshot', (ev) => {
     const next = JSON.parse(ev.data);
@@ -657,7 +665,7 @@ function subscribe() {
   });
   stream.onerror = () => {
     if (originalAudio) { audioUntil = 0; audioSequence = null; }
-    if ($('#event-status')) $('#event-status').textContent = 'Connection interrupted · reconnecting';
+    if ($('#event-status')) $('#event-status').textContent = t('Connection interrupted · reconnecting');
   };
 }
 
@@ -674,20 +682,20 @@ async function qr() {
   const url = `${base}/?room=${session.id}&as=listen`;
   const local = /localhost|127\.0\.0\.1/.test(base);
   $('#join-url').value = url;
-  $('#join-dialog h2').textContent = 'Subtitles on a phone';
-  $('#join-note').textContent = local
+  $('#join-dialog h2').textContent = t('Subtitles on a phone');
+  $('#join-note').textContent = t(local
     ? 'This QR works on this computer only. Set a public HTTPS address before people in the hall scan it.'
-    : 'Scan with a phone to read the subtitles.';
+    : 'Scan with a phone to read the subtitles.');
   const response = await fetch(`/api/sessions/${session.id}/qr?url=${encodeURIComponent(url)}`);
-  $('#qr').innerHTML = response.ok ? await response.text() : 'QR is unavailable. Use the room link.';
+  $('#qr').innerHTML = response.ok ? await response.text() : t('QR is unavailable. Use the room link.');
   $('#join-dialog').showModal();
 }
 
-const card = (item) => `<article class="session-card"><span class="pill">${e(item.status)}</span><h3>${e(item.title)}</h3><p>${e(languageName(item.sourceLanguage))} · ${e(item.visibility)}</p><a href="/?room=${item.id}&as=${owners()[item.id] ? 'imam' : 'listen'}">Open</a></article>`;
+const card = (item) => `<article class="session-card"><span class="pill">${e(t(item.status))}</span><h3>${e(item.title)}</h3><p>${e(languageName(item.sourceLanguage))} · ${e(t(item.visibility))}</p><a href="/?room=${item.id}&as=${owners()[item.id] ? 'imam' : 'listen'}">${t('Open')}</a></article>`;
 
 async function listView() {
   const archive = view === 'archive';
-  $('#main').innerHTML = `<div class="page-head"><h1>${archive ? 'Archive' : 'Sessions'}</h1><p>${archive ? 'Rooms opened in this browser, and rooms on your signed-in account.' : 'Public venue rooms on this server.'}</p></div>${archive ? '' : '<div class="notice panel">Location is optional. <button type="button" id="near" class="quiet">Use approximate location</button></div>'}<div id="sessions" class="session-list">Loading…</div>`;
+  $('#main').innerHTML = `<div class="page-head"><h1>${t(archive ? 'Archive' : 'Sessions')}</h1><p>${t(archive ? 'Rooms opened in this browser, and rooms on your signed-in account.' : 'Public venue rooms on this server.')}</p></div>${archive ? '' : `<div class="notice panel">${t('Location is optional.')} <button type="button" id="near" class="quiet">${t('Use approximate location')}</button></div>`}<div id="sessions" class="session-list">${t('Loading…')}</div>`;
   try {
     let list;
     if (archive) {
@@ -700,14 +708,14 @@ async function listView() {
         list = [...new Map([...list, ...accountRooms].map((item) => [item.id, item])).values()];
       } catch { /* signed out */ }
     } else list = (await api('/api/sessions?public=true')).sessions;
-    $('#sessions').innerHTML = list.length ? list.map(card).join('') : '<div class="notice panel">No rooms yet.</div>';
+    $('#sessions').innerHTML = list.length ? list.map(card).join('') : `<div class="notice panel">${t('No rooms yet.')}</div>`;
     on('#near', () => navigator.geolocation.getCurrentPosition((position) => {
       const lat = Math.round(position.coords.latitude * 100) / 100;
       const lng = Math.round(position.coords.longitude * 100) / 100;
       const found = list.filter((item) => item.location && Math.hypot(item.location.latitude - lat, (item.location.longitude - lng) * Math.cos(lat * Math.PI / 180)) * 111 <= 30);
-      $('#sessions').innerHTML = found.length ? found.map(card).join('') : '<div class="notice panel">No public rooms with a shared location within about 30 km.</div>';
-      toast('Approximate location was used for this search only.');
-    }, () => toast('Location is unavailable. The public list still works.'), { enableHighAccuracy: false, timeout: 10000 }));
+      $('#sessions').innerHTML = found.length ? found.map(card).join('') : `<div class="notice panel">${t('No public rooms with a shared location within about 30 km.')}</div>`;
+      toast(t('Approximate location was used for this search only.'));
+    }, () => toast(t('Location is unavailable. The public list still works.')), { enableHighAccuracy: false, timeout: 10000 }));
   } catch (err) {
     $('#sessions').textContent = err.message;
   }
@@ -717,14 +725,29 @@ document.querySelectorAll('[data-view]').forEach((n) => {
   n.onclick = () => { view = n.dataset.view; render(); };
 });
 $('.dialog-close').onclick = () => $('#join-dialog').close();
-$('#copy-link').onclick = act(async () => { await navigator.clipboard.writeText($('#join-url').value); toast('Link copied'); });
+$('#copy-link').onclick = act(async () => { await navigator.clipboard.writeText($('#join-url').value); toast(t('Link copied')); });
+
+function paintConnection() {
+  const node = $('#connection');
+  node.textContent = t(connectionState);
+  node.className = connectionState === 'Ready' ? 'pill live' : connectionState === 'Connecting' ? 'pill' : 'pill warn';
+}
+
+document.addEventListener('click', (ev) => {
+  if (!ev.target.closest('.lang-toggle')) return;
+  toggleUiLang();
+  paintConnection();
+  render();
+});
+applyUiLang();
+paintConnection();
 
 try {
   config = await api('/api/config');
   try { profiles = (await api('/api/me/profiles')).profiles; } catch { /* signed out */ }
   try { accountRoomIds = new Set((await api('/api/me/sessions')).sessions.map((item) => item.id)); } catch { /* signed out */ }
-  $('#connection').textContent = config.liveAvailable ? 'Ready' : 'Needs a project key';
-  $('#connection').className = config.liveAvailable ? 'pill live' : 'pill warn';
+  connectionState = config.liveAvailable ? 'Ready' : 'Needs a project key';
+  paintConnection();
   const parameters = new URLSearchParams(location.search);
   selectedProfile = parameters.get('profile');
   if (selectedProfile) view = 'profile';
@@ -746,18 +769,19 @@ try {
   render();
   booted = true;
 } catch (err) {
-  $('#connection').textContent = 'Offline';
-  $('#main').innerHTML = `<div class="page-head"><h1>Minbar is offline</h1><p>Start the server and refresh.</p></div><div class="notice panel">${e(err.message)}</div>`;
+  connectionState = 'Offline';
+  paintConnection();
+  $('#main').innerHTML = `<div class="page-head"><h1>${t('Minbar is offline')}</h1><p>${t('Start the server and refresh.')}</p></div><div class="notice panel">${e(err.message)}</div>`;
 }
 
 async function accountView() {
-  $('#main').innerHTML = `<div class="page-head"><h1>Account</h1><p>Sign in to keep venue profiles and rooms on this server.</p></div><div class="panel account-form">Loading account…</div>`;
+  $('#main').innerHTML = `<div class="page-head"><h1>${t('Account')}</h1><p>${t('Sign in to keep venue profiles and rooms on this server.')}</p></div><div class="panel account-form">${t('Loading account…')}</div>`;
   try {
     const me = await api('/api/auth/me');
     const box = $('.account-form');
     if (me.user) {
       const billing = await api('/api/billing/status');
-      box.innerHTML = `<h2>${e(me.user.email)}</h2><p class="meta">Signed in on this server.</p><p>Subscription: ${e(billing.subscription?.status || 'None')}</p><p class="hint">${billing.configured ? 'Checkout uses the price configured on the server.' : 'Billing is not configured, so no payment is collected.'}</p>${billing.configured ? '<button type="button" id="checkout" class="primary">Open checkout</button>' : ''}<div class="stack"><button type="button" id="logout" class="secondary full">Sign out</button></div>`;
+      box.innerHTML = `<h2>${e(me.user.email)}</h2><p class="meta">${t('Signed in on this server.')}</p><p>${e(t('Subscription: {status}', { status: billing.subscription?.status || t('None') }))}</p><p class="hint">${t(billing.configured ? 'Checkout uses the price configured on the server.' : 'Billing is not configured, so no payment is collected.')}</p>${billing.configured ? `<button type="button" id="checkout" class="primary">${t('Open checkout')}</button>` : ''}<div class="stack"><button type="button" id="logout" class="secondary full">${t('Sign out')}</button></div>`;
       on('#logout', async () => {
         await api('/api/auth/logout', { method: 'POST' });
         profiles = [];
@@ -768,10 +792,10 @@ async function accountView() {
       on('#checkout', async () => {
         const data = await api('/api/billing/checkout', { method: 'POST', body: '{}' });
         if (/^https:\/\//.test(data.url)) location.href = data.url;
-        else throw Error('Invalid checkout address');
+        else throw Error(t('Invalid checkout address'));
       });
     } else {
-      box.innerHTML = `<h2>Sign in</h2><label class="field" for="email">Email</label><input id="email" type="email" autocomplete="username"><label class="field" for="password">Password</label><input id="password" type="password" autocomplete="current-password" minlength="12"><p class="hint">New accounts need at least 12 characters. The password is not stored in this browser.</p><div class="row"><button type="button" id="login" class="primary">Sign in</button><button type="button" id="register" class="secondary">Create account</button></div>`;
+      box.innerHTML = `<h2>${t('Sign in')}</h2><label class="field" for="email">${t('Email')}</label><input id="email" type="email" autocomplete="username" dir="ltr"><label class="field" for="password">${t('Password')}</label><input id="password" type="password" autocomplete="current-password" minlength="12"><p class="hint">${t('New accounts need at least 12 characters. The password is not stored in this browser.')}</p><div class="row"><button type="button" id="login" class="primary">${t('Sign in')}</button><button type="button" id="register" class="secondary">${t('Create account')}</button></div>`;
       for (const action of ['login', 'register']) {
         on(`#${action}`, async () => {
           await api(`/api/auth/${action}`, { method: 'POST', body: JSON.stringify({ email: $('#email').value, password: $('#password').value }) });
@@ -787,10 +811,10 @@ async function accountView() {
 }
 
 async function profileView() {
-  $('#main').innerHTML = `<div class="page-head"><h1>Profile</h1><p>Public venue rooms for this speaker or place.</p></div><div id="public-profile" class="panel">Loading…</div>`;
+  $('#main').innerHTML = `<div class="page-head"><h1>${t('Profile')}</h1><p>${t('Public venue rooms for this speaker or place.')}</p></div><div id="public-profile" class="panel">${t('Loading…')}</div>`;
   try {
     const data = await api(`/api/profiles/${encodeURIComponent(selectedProfile)}`);
-    $('#public-profile').innerHTML = `<p class="kicker">${e(data.profile.type)}</p><h2>${e(data.profile.name)}</h2><p>${e(data.profile.bio)}</p><div class="session-list">${data.sessions.length ? data.sessions.map(card).join('') : '<p class="meta">No public sessions yet.</p>'}</div>`;
+    $('#public-profile').innerHTML = `<p class="kicker">${e(t(data.profile.type))}</p><h2>${e(data.profile.name)}</h2><p>${e(data.profile.bio)}</p><div class="session-list">${data.sessions.length ? data.sessions.map(card).join('') : `<p class="meta">${t('No public sessions yet.')}</p>`}</div>`;
   } catch (err) {
     $('#public-profile').textContent = err.message;
   }
@@ -800,7 +824,7 @@ async function profileEditor(box) {
   profiles = (await api('/api/me/profiles')).profiles;
   const section = document.createElement('section');
   section.className = 'profile-editor';
-  section.innerHTML = `<h2>Profiles</h2><p class="hint">A public profile is a lasting link. Private recordings stay off it.</p>${profiles.map((p) => `<p><a href="/?profile=${e(p.id)}">${e(p.name)}</a> <button type="button" class="quiet" data-edit-profile="${e(p.id)}">Edit</button></p>`).join('')}<label class="field" for="profile-name">Public name</label><input id="profile-name" maxlength="100"><label class="field" for="profile-type">Type</label><select id="profile-type"><option value="venue">Venue</option><option value="speaker">Speaker</option></select><label class="field" for="profile-bio">Description</label><textarea id="profile-bio" maxlength="1000"></textarea><button type="button" id="save-profile" class="secondary">Save profile</button>`;
+  section.innerHTML = `<h2>${t('Profiles')}</h2><p class="hint">${t('A public profile is a lasting link. Private recordings stay off it.')}</p>${profiles.map((p) => `<p><a href="/?profile=${e(p.id)}">${e(p.name)}</a> <button type="button" class="quiet" data-edit-profile="${e(p.id)}">${t('Edit')}</button></p>`).join('')}<label class="field" for="profile-name">${t('Public name')}</label><input id="profile-name" maxlength="100"><label class="field" for="profile-type">${t('Type')}</label><select id="profile-type"><option value="venue">${t('Venue')}</option><option value="speaker">${t('Speaker')}</option></select><label class="field" for="profile-bio">${t('Description')}</label><textarea id="profile-bio" maxlength="1000"></textarea><button type="button" id="save-profile" class="secondary">${t('Save profile')}</button>`;
   box.append(section);
   let editing = null;
   section.querySelectorAll('[data-edit-profile]').forEach((button) => {
@@ -810,7 +834,7 @@ async function profileEditor(box) {
       $('#profile-name').value = profile.name;
       $('#profile-type').value = profile.type;
       $('#profile-bio').value = profile.bio;
-      $('#save-profile').textContent = 'Save changes';
+      $('#save-profile').textContent = t('Save changes');
     };
   });
   on('#save-profile', async () => {
@@ -819,7 +843,7 @@ async function profileEditor(box) {
       body: JSON.stringify({ name: $('#profile-name').value, type: $('#profile-type').value, bio: $('#profile-bio').value })
     });
     await accountView();
-    toast('Profile saved');
+    toast(t('Profile saved'));
   });
 }
 
@@ -831,7 +855,7 @@ async function beginCapture(saveAudio) {
   render();
   try {
     if (config.localDevelopmentAvailable) await api('/api/local-access', { method: 'POST', body: '{}' });
-    else if (!hostKey && !(await askHostKey())) throw Error('A host key is needed to record.');
+    else if (!hostKey && !(await askHostKey())) throw Error(t('A host key is needed to record.'));
     const { startTranscription } = await import('./realtime.js');
     const start = () => startTranscription({
       sessionId: session.id,
@@ -847,7 +871,7 @@ async function beginCapture(saveAudio) {
       rec = await start();
     } catch (err) {
       if (config.localDevelopmentAvailable || !needsHostKey(err.message)) throw err;
-      if (!(await askHostKey('That host key was not accepted. Enter the key set on the server.'))) throw Error('A host key is needed to record.');
+      if (!(await askHostKey('That host key was not accepted. Enter the key set on the server.'))) throw Error(t('A host key is needed to record.'));
       rec = await start();
     }
     recordingStatus = 'Listening';

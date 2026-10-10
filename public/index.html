@@ -10,7 +10,7 @@
 <body>
   <div class="shell">
     <header class="topbar">
-      <a class="brand" href="/" aria-label="Minbar home">
+      <a class="brand" href="/" aria-label="Minbar home" data-i18n-label>
         <svg class="mark" viewBox="0 0 32 36" aria-hidden="true">
           <path d="M5 34V15.5C5 8 27 8 27 15.5V34" fill="none" stroke="currentColor" stroke-width="1.7"/>
           <path d="M3.5 34h25" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
@@ -19,38 +19,39 @@
         <span class="brand-name">Minbar</span>
         <span class="brand-arabic" lang="ar" dir="rtl">منبر</span>
       </a>
-      <nav aria-label="Main">
-        <button type="button" data-view="home" class="nav active">Imam</button>
-        <button type="button" data-view="nearby" class="nav">Sessions</button>
-        <button type="button" data-view="archive" class="nav">Archive</button>
-        <button type="button" data-view="account" class="nav">Account</button>
+      <nav aria-label="Main" data-i18n-label>
+        <button type="button" data-view="home" class="nav active" data-i18n>Imam</button>
+        <button type="button" data-view="nearby" class="nav" data-i18n>Sessions</button>
+        <button type="button" data-view="archive" class="nav" data-i18n>Archive</button>
+        <button type="button" data-view="account" class="nav" data-i18n>Account</button>
       </nav>
+      <button type="button" class="lang-toggle" lang="ar">العربية</button>
       <span id="connection" class="pill">Connecting</span>
     </header>
     <main id="main"></main>
     <footer>
-      <span>Transcripts and translations can be wrong. Verify Quran and hadith references before you rely on them.</span>
+      <span data-i18n>Transcripts and translations can be wrong. Verify Quran and hadith references before you rely on them.</span>
     </footer>
   </div>
   <div id="toast" role="status" aria-live="polite"></div>
   <dialog id="join-dialog">
-    <button type="button" class="dialog-close" aria-label="Close">×</button>
-    <p class="kicker">Share</p>
+    <button type="button" class="dialog-close" aria-label="Close" data-i18n-label>×</button>
+    <p class="kicker" data-i18n>Share</p>
     <h2>Join this room</h2>
     <div id="qr"></div>
     <p id="join-note">Scan with a phone, or copy the room link.</p>
-    <input id="join-url" readonly aria-label="Room link">
-    <button type="button" id="copy-link" class="primary">Copy link</button>
+    <input id="join-url" readonly aria-label="Room link" data-i18n-label>
+    <button type="button" id="copy-link" class="primary" data-i18n>Copy link</button>
   </dialog>
   <dialog id="key-dialog">
     <form method="dialog" id="key-form">
-      <p class="kicker">Imam</p>
-      <h2>Host key</h2>
+      <p class="kicker" data-i18n>Imam</p>
+      <h2 data-i18n>Host key</h2>
       <p class="hint" id="key-note">Recording and translation need the host key for this server. It is saved on this device only.</p>
-      <input id="key-input" type="password" autocomplete="current-password" aria-label="Host key" required>
+      <input id="key-input" type="password" autocomplete="current-password" aria-label="Host key" data-i18n-label required>
       <div class="row">
-        <button type="submit" value="save" class="primary">Save key</button>
-        <button type="submit" value="cancel" class="quiet" formnovalidate>Cancel</button>
+        <button type="submit" value="save" class="primary" data-i18n>Save key</button>
+        <button type="submit" value="cancel" class="quiet" formnovalidate data-i18n>Cancel</button>
       </div>
     </form>
   </dialog>

@@ -55,11 +55,11 @@ a { color: var(--ink); }
 .brand-arabic {
   font-family: var(--arabic);
   font-size: 20px;
-  padding-left: 10px;
-  border-left: 1px solid var(--line);
+  padding-inline-start: 10px;
+  border-inline-start: 1px solid var(--line);
   line-height: 1;
 }
-nav { display: flex; gap: 4px; margin-left: auto; }
+nav { display: flex; gap: 4px; margin-inline-start: auto; }
 .nav {
   border: 0;
   background: transparent;
@@ -258,7 +258,7 @@ summary { cursor: pointer; font-size: 13px; font-weight: 650; }
   margin: 0;
   color: var(--ink-soft);
 }
-.passage.drafting { box-shadow: inset 2px 0 0 var(--gold); padding-left: 14px; }
+.passage.drafting { border-inline-start: 2px solid var(--gold); padding-inline-start: 14px; }
 .citation {
   display: block;
   margin-top: 14px;
@@ -315,7 +315,7 @@ dialog::backdrop { background: rgba(20, 53, 44, 0.45); }
 .dialog-close {
   position: absolute;
   top: 10px;
-  right: 12px;
+  inset-inline-end: 12px;
   border: 0;
   background: transparent;
   font-size: 24px;
@@ -333,7 +333,7 @@ dialog input { margin: 8px 0 12px; }
   .topbar { height: auto; flex-wrap: wrap; padding: 14px 0; gap: 12px; }
   nav { order: 3; width: 100%; margin: 0; overflow: auto; }
   .nav { padding: 8px 10px; }
-  #connection { margin-left: auto; }
+  #connection { margin-inline-start: auto; }
   .choice, .segmented { grid-template-columns: 1fr; }
   .arabic { font-size: 26px; }
   .english { font-size: 17px; }
@@ -429,7 +429,7 @@ dialog input { margin: 8px 0 12px; }
   border-radius: 16px;
   box-shadow: var(--shadow);
 }
-.control-status { display: flex; align-items: center; gap: 8px; margin-right: auto; font-size: 14px; color: var(--ink-soft); min-width: 0; }
+.control-status { display: flex; align-items: center; gap: 8px; margin-inline-end: auto; font-size: 14px; color: var(--ink-soft); min-width: 0; }
 .control-status .dot { color: var(--muted); }
 .control-status .dot.on { color: #c2362b; }
 .control-bar .secondary, .control-bar .quiet { padding: 10px 14px; font-size: 14px; border-radius: 12px; border-color: var(--line); }
@@ -505,6 +505,29 @@ body.role-listen .sub.earlier .english { font-size: calc(18px * var(--scale, 1))
 @media (max-width: 900px) {
   .imam-home { grid-template-columns: 1fr; }
 }
+.lang-toggle {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink);
+  padding: 6px 12px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+.lang-toggle:lang(ar) { font-family: var(--arabic); font-size: 15px; padding: 3px 12px; }
+.stage-toggle { color: var(--stage-text); border-color: var(--stage-line); }
+
+/* Arabic interface: Arabic-capable fonts, and no letter-spacing (it breaks joined letters) */
+html[lang="ar"] {
+  --serif: "Sakkal Majalla", "Traditional Arabic", "Noto Naskh Arabic", "Amiri", serif;
+  --sans: "Segoe UI", "Noto Sans Arabic", Tahoma, system-ui, sans-serif;
+}
+html[lang="ar"] body, html[lang="ar"] body * { letter-spacing: 0 !important; }
+html[lang="ar"] .kicker, html[lang="ar"] .band-label, html[lang="ar"] .live-title small { text-transform: none; font-size: 13px; }
+html[lang="ar"] .desk h2, html[lang="ar"] .role-card h2, html[lang="ar"] .role-list h1, html[lang="ar"] .page-head h1, html[lang="ar"] .stage-wait strong { font-weight: 700; line-height: 1.35; }
+html[lang="ar"] .band-wait { font-family: var(--sans); font-size: 18px; }
+html[lang="ar"] .sub-translation[lang="en"], html[lang="ar"] .band p[lang="en"] { font-family: "Palatino Linotype", Palatino, Georgia, serif; }
+
 @media (prefers-reduced-motion: reduce) {
   .dot.on, .caret { animation: none; }
   .w.new { animation-duration: 0.01s; }
