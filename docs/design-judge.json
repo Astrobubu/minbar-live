@@ -1,0 +1,43 @@
+{
+  "state": {
+    "goal": "Choose accessible GCC Arabic-English functional transcription app design based on supplied textual observations, not direct pixels.",
+    "concepts": {
+      "1": "Ivory forest green editorial headings; clear readable stacked Arabic and English panels. Broadcast controls separate. No imagery. Calm admin reading.",
+      "2": "Midnight navy high contrast cream large original/translation pairs; amber status. Projector dark layout.",
+      "3": "White cobalt oversized transcript typography. Controls right. High accessibility, but large panels consume space.",
+      "4": "Sandstone burgundy serif editorial cultural styling, readable spacious panels; less neutral.",
+      "5": "Sage charcoal compact navigation; parallel two transcript columns causes narrow reading on phone; generated fake mosque location must be discarded."
+    },
+    "requirements": "Root LTR; Arabic text RTL; no fake live microphone states/statistics; no speed certainty. Phones need stacked paired passages; projectors need large high contrast type."
+  },
+  "questions": [
+    {
+      "id": "primary",
+      "type": "choice",
+      "question": "Best default reading/admin design for warm neutral GCC app?",
+      "options": {
+        "1": "Ivory forest editorial",
+        "2": "Navy projector",
+        "3": "Cobalt civic",
+        "4": "Burgundy editorial",
+        "5": "Sage columns"
+      }
+    },
+    {
+      "id": "projector",
+      "type": "choice",
+      "question": "Best optional projector mode?",
+      "options": {
+        "1": "Ivory forest",
+        "2": "Navy high contrast",
+        "5": "Sage split columns"
+      }
+    },
+    {
+      "id": "discard-fake",
+      "type": "noul",
+      "question": "Should generated fake venue location and microphone-on demo states be excluded from implementation?"
+    }
+  ],
+  "model": "typesafe/jev-1.13"
+}

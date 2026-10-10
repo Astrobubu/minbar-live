@@ -1,0 +1,16 @@
+mcp.json
+**/mcp.json
+.env
+.env.*
+!.env.example
+.data/
+node_modules/
+benchmark-results/
+
+clip-*.wav
+clip-*.pcm
+*.aac
+*.mp3
+*.m4a
+*.webm
+*.pcm
