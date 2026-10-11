@@ -172,6 +172,7 @@ const server=http.createServer(async(req,res)=>{
 if(!process.env.VERCEL)server.listen(PORT,HOST,()=>{console.log(`Minbar Live at http://${HOST}:${PORT} — share links use ${PUBLIC_BASE} — live API ${liveAvailable?'configured':'disabled'}`);if(localDevelopment&&!['127.0.0.1','::1','localhost'].includes(HOST))console.log('Note: HOST is not loopback. Operator access stays loopback-only, but anyone on the network can read public rooms.');});
 const handler=(req,res)=>server.emit('request',req,res);
 export {server,handler};
+export default handler;
 
 
 
