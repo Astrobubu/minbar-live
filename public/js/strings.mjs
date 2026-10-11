@@ -137,7 +137,12 @@ export const STRINGS = {
     role_screen: 'Screen',
     role_listen: 'Listen',
     could_not_create: 'Could not create the room.',
-    could_not_join: 'Could not find that room.'
+    could_not_join: 'Could not find that room.',
+    err_network: 'Network error. Check your connection and try again.',
+    err_rate: 'Too many requests. Wait a minute and try again.',
+    err_auth: 'This action needs host authorization.',
+    err_missing: 'The service could not be reached. Please try again.',
+    err_server: 'Something went wrong on the server. Please try again.'
   },
   ar: {
     app_name: 'منبر',
@@ -270,6 +275,11 @@ export const STRINGS = {
     role_screen: 'الشاشة',
     role_listen: 'استماع',
     could_not_create: 'تعذّر إنشاء الغرفة.',
-    could_not_join: 'تعذّر العثور على الغرفة.'
+    could_not_join: 'تعذّر العثور على الغرفة.',
+    err_network: 'خطأ في الاتصال. تحقّق من الإنترنت وأعد المحاولة.',
+    err_rate: 'طلبات كثيرة. انتظر دقيقة ثم أعد المحاولة.',
+    err_auth: 'يتطلب هذا الإجراء تفويض المضيف.',
+    err_missing: 'تعذّر الوصول إلى الخدمة. أعد المحاولة.',
+    err_server: 'حدث خطأ في الخادم. أعد المحاولة.'
   }
 };

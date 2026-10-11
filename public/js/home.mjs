@@ -7,7 +7,14 @@ import {
 const $ = id => document.getElementById(id);
 const state = { source: 'ar', targets: ['en'], visibility: 'public', busy: false };
 
-const showError = (id, message) => { const el = $(id); el.textContent = message || ''; el.hidden = !message; };
+// Server messages are English; in the Arabic UI show a translated message per status instead, and keep any text bidi-safe.
+function errorText(e, fallbackKey) {
+  if (!e) return t(fallbackKey);
+  if (getUiLang() !== 'ar') return e.message || t(fallbackKey);
+  const key = { 0: 'err_network', 401: 'err_auth', 403: 'err_auth', 404: 'err_missing', 429: 'err_rate' }[e.status] || (e.status >= 500 ? 'err_server' : fallbackKey);
+  return t(key);
+}
+const showError = (id, message) => { const el = $(id); el.setAttribute('dir', 'auto'); el.textContent = message || ''; el.hidden = !message; };
 
 /* ---- language toggle ---- */
 function renderUiLangButton() {
@@ -75,7 +82,7 @@ async function startKhutbah(event) {
     });
     location.href = pageUrl('khatib', session.id, {}, { base: null });
   } catch (e) {
-    showError('start-error', e.message || t('could_not_create'));
+    showError('start-error', errorText(e, 'could_not_create'));
     setBusy('start-submit', false, 'create_room');
   }
 }
@@ -96,7 +103,7 @@ async function startDemo() {
     const { session } = await createRoom({ title: t('demo_title'), sourceLanguage: 'ar', targetLanguages: ['en'], visibility: 'public' });
     location.href = pageUrl('khatib', session.id, { demo: 1 }, { base: null });
   } catch (e) {
-    showError('demo-error', e.message || t('could_not_create'));
+    showError('demo-error', errorText(e, 'could_not_create'));
     setBusy('demo-btn', false, 'try_demo');
   }
 }
@@ -114,7 +121,7 @@ async function joinRoom(event) {
     saveRoom(session.id, { title: session.title, code: session.code, sourceLanguage: session.sourceLanguage, targetLanguages: session.targetLanguages, visibility: session.visibility });
     location.href = pageUrl('listen', session.id, {}, { base: null });
   } catch (e) {
-    showError('join-error', e.status === 404 ? t('room_not_found') : e.status === 401 ? t('room_private') : e.message || t('could_not_join'));
+    showError('join-error', e.status === 404 ? t('room_not_found') : e.status === 401 ? t('room_private') : errorText(e, 'could_not_join'));
     setBusy('join-submit', false, 'join');
   }
 }
