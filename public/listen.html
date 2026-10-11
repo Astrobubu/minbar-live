@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en" class="auto-dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+  <title>Minbar</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=IBM+Plex+Sans:wght@400;600&family=Noto+Naskh+Arabic:wght@400;600&family=Noto+Nastaliq+Urdu:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/listen.css">
+</head>
+<body class="listen" data-view="loading">
+  <header class="bar" id="bar">
+    <div class="bar-row">
+      <h1 class="bar-title" id="room-title" dir="auto" data-i18n="app_name">Minbar</h1>
+      <span class="state" id="status-pill" role="status"></span>
+      <i class="audio-ind" id="audio-ind" data-icon="speaker" hidden></i>
+      <label class="visually-hidden" for="lang-select" data-i18n="language">Language</label>
+      <select class="select lang-select" id="lang-select"></select>
+      <div class="menu-wrap">
+        <button type="button" class="btn btn-quiet btn-icon" id="opt-btn" aria-haspopup="true" aria-expanded="false" aria-controls="opt-panel" data-i18n-aria-label="more" data-i18n-title="more"><i data-icon="more"></i></button>
+        <div class="menu" id="opt-panel" hidden>
+          <div class="menu-row">
+            <span data-i18n="text_size">Text size</span>
+            <span class="size-group">
+              <button type="button" class="btn btn-sm" id="size-down" data-i18n-aria-label="text_smaller" data-i18n-title="text_smaller"><span aria-hidden="true" class="size-a size-a-s">A</span></button>
+              <button type="button" class="btn btn-sm" id="size-up" data-i18n-aria-label="text_larger" data-i18n-title="text_larger"><span aria-hidden="true" class="size-a size-a-l">A</span></button>
+            </span>
+          </div>
+          <label class="menu-row" id="orig-row">
+            <span data-i18n="show_original">Show original</span>
+            <input type="checkbox" role="switch" id="orig-toggle" class="switch">
+          </label>
+          <button type="button" class="menu-item" id="audio-btn" aria-pressed="false">
+            <i data-icon="speaker"></i><span id="audio-label" data-i18n="listen_original_audio">Listen to original audio</span>
+          </button>
+          <p class="menu-note" id="audio-status" role="status" hidden></p>
+          <hr class="menu-sep">
+          <button type="button" class="menu-item" id="ui-lang" data-i18n-aria-label="ui_language"><i data-icon="globe"></i><span id="ui-lang-label"></span></button>
+          <a class="menu-item" id="opt-export" href="#" download hidden><i data-icon="download"></i><span data-i18n="export_txt">Export TXT</span></a>
+        </div>
+      </div>
+    </div>
+    <div class="banner" id="banner" role="status" hidden>
+      <span class="spinner" aria-hidden="true"></span><span id="banner-text"></span>
+    </div>
+  </header>
+
+  <main class="reader" id="reader">
+    <section class="state-card" id="state-card" hidden></section>
+    <section class="notice" id="ended-notice" hidden>
+      <h2 data-i18n="ended_title">The khutbah has ended</h2>
+      <p class="muted" data-i18n="ended_hint">Thank you for listening.</p>
+      <a class="btn" id="end-export" href="#" download hidden><i data-icon="download"></i><span data-i18n="export_txt">Export TXT</span></a>
+    </section>
+    <section class="waiting" id="waiting" hidden>
+      <h2 data-i18n="waiting_title">The khutbah will appear here</h2>
+      <p class="muted" data-i18n="waiting_hint">Captions start when the khatib begins.</p>
+    </section>
+    <div class="feed" id="feed" aria-live="polite" aria-relevant="additions text"></div>
+    <p class="draft caption" id="draft" hidden></p>
+    <p class="fineprint" id="fineprint" data-i18n="disclaimer" hidden></p>
+  </main>
+
+  <button type="button" class="jump" id="jump" hidden>
+    <i data-icon="arrowdown"></i><span data-i18n="jump_to_live">Jump to live</span>
+  </button>
+
+  <script type="module" src="/js/listen.mjs"></script>
+</body>
+</html>

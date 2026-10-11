@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
+  <title>Minbar</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=IBM+Plex+Sans:wght@400;600&family=Noto+Naskh+Arabic:wght@400;600&family=Noto+Nastaliq+Urdu:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/khatib.css">
+</head>
+<body class="khatib" data-view="loading">
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <a class="wordmark" href="/" data-i18n="app_name">Minbar</a>
+      <h1 class="room-title" id="room-title" dir="auto" hidden></h1>
+      <span class="state" id="state" role="status" aria-live="polite" hidden>
+        <span class="dot-live is-idle" id="live-dot" aria-hidden="true"></span>
+        <span id="status-text"></span>
+        <span class="num muted" id="elapsed" hidden></span>
+      </span>
+      <span class="spacer"></span>
+      <button type="button" class="btn" id="share-btn" data-console>
+        <i data-icon="share"></i><span class="btn-text" data-i18n="share">Share</span>
+      </button>
+      <div class="menu-wrap">
+        <button type="button" class="btn btn-icon" id="menu-btn" aria-haspopup="menu" aria-expanded="false" aria-controls="menu" data-i18n-aria-label="more" data-i18n-title="more"><i data-icon="more"></i></button>
+        <div class="menu" id="menu" role="menu" hidden>
+          <a class="menu-item" id="export-txt" role="menuitem" download data-console><i data-icon="download"></i><span data-i18n="export_txt">Export TXT</span></a>
+          <a class="menu-item" id="export-json" role="menuitem" download data-console><i data-icon="download"></i><span data-i18n="export_json">Export JSON</span></a>
+          <button type="button" class="menu-item" id="transcribe-btn" role="menuitem" data-console><i data-icon="file"></i><span data-i18n="transcribe_file">Transcribe a file</span></button>
+          <input type="file" id="upload-input" accept="audio/*,.mp3,.m4a,.wav,.webm,.aac,.mp4" class="visually-hidden" tabindex="-1">
+          <hr class="menu-sep" data-console>
+          <a class="menu-item menu-home" href="/" role="menuitem"><i data-icon="home"></i><span data-i18n="back_home">Back to start</span></a>
+          <button type="button" class="menu-item" id="ui-lang" role="menuitem"><i data-icon="globe"></i><span id="ui-lang-label"></span></button>
+          <hr class="menu-sep" data-console>
+          <button type="button" class="menu-item is-danger" id="end-btn" role="menuitem" data-console><i data-icon="stop"></i><span data-i18n="end_khutbah">End khutbah</span></button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- loading / cannot-control / not found -->
+  <main class="container gate" id="gate" aria-live="polite">
+    <div class="spinner" id="gate-spinner" aria-hidden="true"></div>
+    <h2 id="gate-title" data-i18n="loading">Loading…</h2>
+    <p class="muted gate-body" id="gate-body"></p>
+    <div class="row" id="gate-actions"></div>
+  </main>
+
+  <main class="container console" id="console" hidden>
+    <aside class="rail" aria-label="Controls">
+      <p class="ended-note" id="ended-note" data-i18n="ended_cannot_start" hidden>This khutbah has ended.</p>
+      <div class="seg" role="radiogroup" id="mode-group" data-i18n-aria-label="source_audio">
+        <label><input type="radio" name="mode" value="mic" checked><span><i data-icon="mic"></i><span data-i18n="src_mic">Microphone</span></span></label>
+        <label><input type="radio" name="mode" value="file"><span><i data-icon="wave"></i><span data-i18n="src_file">Audio file</span></span></label>
+      </div>
+
+      <div class="file-panel" id="file-panel" hidden>
+        <select class="select" id="sample" data-i18n-aria-label="pick_sample"></select>
+        <button type="button" class="btn btn-block" id="pick-file"><i data-icon="file"></i><span data-i18n="from_device">Choose a file</span></button>
+        <input type="file" id="file-input" accept="audio/*,.mp3,.m4a,.wav,.webm,.aac,.ogg" class="visually-hidden" tabindex="-1">
+        <div class="player" id="player-box">
+          <div class="player-row">
+            <span class="player-name" id="player-name"></span>
+            <span class="player-time num" id="player-time" dir="ltr">0:00 / 0:00</span>
+          </div>
+          <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="player-bar"><span id="player-fill"></span></div>
+        </div>
+        <audio id="player" preload="metadata" playsinline></audio>
+      </div>
+
+      <button type="button" class="btn btn-primary btn-lg btn-block" id="primary">
+        <span class="primary-icon" id="primary-icon" aria-hidden="true"></span>
+        <span id="primary-label"></span>
+      </button>
+      <button type="button" class="btn btn-block" id="pause-btn" hidden></button>
+
+      <div class="meter-wrap" id="meter-wrap">
+        <div class="meter" id="meter" role="meter" aria-labelledby="meter-label" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="meter-fill"></span></div>
+        <div class="label" id="meter-label" data-i18n="mic_level">Level</div>
+      </div>
+
+      <div class="banner" id="banner" role="alert" hidden>
+        <p id="banner-text"></p>
+        <div class="row" id="banner-actions"></div>
+      </div>
+      <p class="rail-note" id="notice" role="status" hidden></p>
+      <p class="rail-note" id="upload-status" role="status"></p>
+      <a class="rail-link" id="new-room" href="/" data-i18n="new_khutbah" hidden>Start a new khutbah</a>
+    </aside>
+
+    <section class="transcript" aria-labelledby="live-h">
+      <div class="transcript-head">
+        <h2 id="live-h" class="label" data-i18n="live_transcript">Transcript</h2>
+        <div class="chips" id="tgt-tabs" role="radiogroup" data-i18n-aria-label="language"></div>
+      </div>
+      <div class="feed-wrap">
+        <div class="feed" id="feed" tabindex="0" role="log" aria-live="off" data-i18n-aria-label="live_transcript"></div>
+        <button type="button" class="btn btn-primary jump" id="jump" hidden><i data-icon="arrowdown"></i><span data-i18n="jump_to_live">Jump to live</span></button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="page-foot" id="page-foot">
+    <div class="container"><p class="fineprint" data-i18n="disclaimer"></p></div>
+  </footer>
+
+  <dialog class="dialog" id="share-dialog" aria-labelledby="share-title">
+    <div class="dialog-head">
+      <h2 id="share-title" data-i18n="share">Share</h2>
+      <button type="button" class="btn btn-quiet btn-icon" id="share-close" data-i18n-aria-label="close"><i data-icon="x"></i></button>
+    </div>
+    <div class="share-body">
+      <div class="share-qr" id="share-qr-box"><img id="share-qr" alt="" width="160" height="160"></div>
+      <div class="share-fields">
+        <div class="field">
+          <span class="label" data-i18n="room_code">Room code</span>
+          <div class="row nowrap">
+            <output class="code-box" id="room-code" dir="ltr"></output>
+            <button type="button" class="btn btn-quiet btn-icon copy-btn" id="copy-code" data-i18n-aria-label="copy" data-i18n-title="copy"><i data-icon="copy"></i></button>
+          </div>
+        </div>
+        <div class="field">
+          <label class="label" for="hall-link" data-i18n="hall_link">Hall screen link</label>
+          <div class="row nowrap">
+            <input class="input" id="hall-link" readonly dir="ltr">
+            <button type="button" class="btn btn-quiet btn-icon copy-btn" id="copy-hall" data-i18n-aria-label="copy" data-i18n-title="copy"><i data-icon="copy"></i></button>
+          </div>
+        </div>
+        <div class="field">
+          <label class="label" for="phone-link" data-i18n="phone_link">Phone link</label>
+          <div class="row nowrap">
+            <input class="input" id="phone-link" readonly dir="ltr">
+            <button type="button" class="btn btn-quiet btn-icon copy-btn" id="copy-link" data-i18n-aria-label="copy" data-i18n-title="copy"><i data-icon="copy"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="fineprint" id="share-private" hidden></p>
+    <div class="dialog-actions">
+      <a class="btn" id="open-listen" target="_blank" rel="noopener" data-i18n="open_listener_view">Open phone view</a>
+      <button type="button" class="btn btn-primary" id="open-screen" data-i18n="open_hall_screen">Open hall screen</button>
+    </div>
+  </dialog>
+
+  <dialog class="dialog dialog-sm" id="end-dialog" aria-labelledby="end-title">
+    <form method="dialog">
+      <h2 id="end-title" data-i18n="end_khutbah">End khutbah</h2>
+      <p class="muted end-text" id="end-text" data-i18n="end_confirm"></p>
+      <div class="dialog-actions">
+        <button type="submit" value="cancel" class="btn" data-i18n="cancel">Cancel</button>
+        <button type="submit" value="end" class="btn btn-danger-solid" id="end-confirm" data-i18n="end_khutbah">End khutbah</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" hidden></div>
+  <script type="module" src="/js/khatib.mjs"></script>
+</body>
+</html>

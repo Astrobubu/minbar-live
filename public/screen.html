@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#000000">
+  <title>Minbar</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=IBM+Plex+Sans:wght@400;600&family=Noto+Naskh+Arabic:wght@400;600&family=Noto+Nastaliq+Urdu:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/screen.css">
+</head>
+<body class="theme-dark screen">
+  <div class="hall">
+    <header class="bar">
+      <div class="room">
+        <i class="dot-live is-idle" id="status-dot"></i>
+        <h1 id="title" class="room-title"></h1>
+        <span class="status" id="status" data-tone="idle"><span id="status-text"></span></span>
+      </div>
+      <aside class="share" id="share" hidden>
+        <div class="share-text">
+          <span data-i18n="read_on_phone"></span>
+          <bdi id="code" dir="ltr"></bdi>
+        </div>
+        <div class="qr"><img id="qr" alt="" width="160" height="160"></div>
+      </aside>
+    </header>
+
+    <main class="stage">
+      <div class="captions" id="captions" role="log" aria-live="polite" aria-relevant="additions">
+        <div class="lines" id="lines"></div>
+      </div>
+      <section class="state" id="state" hidden>
+        <div class="spinner" id="state-spinner" hidden></div>
+        <h2 id="state-title"></h2>
+        <p id="state-hint"></p>
+      </section>
+    </main>
+
+    <div class="settings" id="settings">
+      <div class="panel" id="panel" role="dialog" aria-labelledby="panel-title" hidden>
+        <h3 id="panel-title" class="label" data-i18n="settings"></h3>
+        <label class="field">
+          <span class="label" data-i18n="language"></span>
+          <select class="select" id="set-lang"></select>
+        </label>
+        <label class="check">
+          <input type="checkbox" id="set-source">
+          <span data-i18n="show_source"></span>
+        </label>
+        <div class="field">
+          <span class="label" data-i18n="text_size"></span>
+          <div class="size-row">
+            <button type="button" class="btn" id="size-down" data-i18n-aria-label="text_smaller">&minus;</button>
+            <output id="size-value" class="size-value num"></output>
+            <button type="button" class="btn" id="size-up" data-i18n-aria-label="text_larger">+</button>
+          </div>
+        </div>
+        <button type="button" class="btn btn-block" id="set-fullscreen"></button>
+        <a class="btn btn-quiet btn-block" id="set-home" href="/" data-i18n="back_home"></a>
+      </div>
+      <button type="button" class="gear" id="gear" aria-haspopup="dialog" aria-expanded="false" data-i18n-aria-label="settings" data-i18n-title="settings"><i data-icon="sliders"></i></button>
+    </div>
+  </div>
+  <script type="module" src="/js/screen.mjs"></script>
+</body>
+</html>

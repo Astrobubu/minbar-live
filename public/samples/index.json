@@ -1,0 +1,5 @@
+[
+  { "id": "ar-1", "file": "ar-1.mp3", "title": "Arabic sermon 1", "titleAr": "خطبة عربية ١", "language": "ar", "durationSec": 387 },
+  { "id": "ar-2", "file": "ar-2.mp3", "title": "Arabic sermon 2", "titleAr": "خطبة عربية ٢", "language": "ar", "durationSec": 503 },
+  { "id": "ar-3", "file": "ar-3.mp3", "title": "Arabic sermon 3", "titleAr": "خطبة عربية ٣", "language": "ar", "durationSec": 530 }
+]

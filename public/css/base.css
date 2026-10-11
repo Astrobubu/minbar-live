@@ -1,0 +1,224 @@
+/* Minbar base: tokens, type, controls. IBM Plex Sans for Latin, Noto Naskh Arabic for Arabic, Noto Nastaliq Urdu for Urdu, Quran text in Amiri Quran.
+   Every page loads exactly one Google Fonts link (weights 400 + 600 only):
+   <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=IBM+Plex+Sans:wght@400;600&family=Noto+Naskh+Arabic:wght@400;600&family=Noto+Nastaliq+Urdu:wght@400;600&display=swap" rel="stylesheet">
+   Dark: class "theme-dark" on <body>/<html> (hall screen), or class "auto-dark" on <html> to follow prefers-color-scheme (phone).
+   Use logical properties (margin-inline, inset-inline...) so layouts flip with dir="rtl". */
+
+:root {
+  /* colour */
+  --bg: #fff;
+  --ink: #111;
+  --muted: #6b6b6b;
+  --line: #e7e7e7;           /* hairlines */
+  --control: #cfcfcf;        /* control borders */
+  --fill: #f3f3f3;           /* quiet fills: segmented track, hover */
+  --accent: #0b6e4f;         /* the only accent: primary action + live state */
+  --on-accent: #fff;
+  --red: #c62828;            /* live dot + destructive only */
+  --on-ink: #fff;
+
+  /* type: one stack per script, selected by :lang() below */
+  --font-latin: 'IBM Plex Sans', 'Noto Naskh Arabic', system-ui, sans-serif;
+  --font-arabic: 'Noto Naskh Arabic', 'IBM Plex Sans', system-ui, sans-serif;
+  --font-urdu: 'Noto Nastaliq Urdu', 'Noto Naskh Arabic', 'IBM Plex Sans', system-ui, sans-serif;
+  --font-quran: 'Amiri Quran', 'Amiri', serif;
+  --fs-1: .8125rem;   /* 13 */
+  --fs-2: .9375rem;   /* 15 */
+  --fs-3: 1.0625rem;  /* 17 */
+  --fs-4: 1.3125rem;  /* 21 */
+  --fs-5: 1.75rem;    /* 28 */
+  --lh: 1.5;
+  --lh-ar: 1.9;     /* Noto Naskh Arabic */
+  --lh-ur: 2.2;     /* Noto Nastaliq Urdu (tall ascenders) */
+  --text-scale: 1;    /* readers multiply caption sizes (A- / A+) */
+
+  /* space + shape: 8px grid */
+  --s1: 8px; --s2: 16px; --s3: 24px; --s4: 32px; --s5: 48px; --s6: 64px;
+  --radius: 10px;
+  --h: 40px;          /* control height */
+  --measure: 1100px;
+  --gutter: 24px;
+}
+
+.theme-dark, :root.theme-dark {
+  --bg: #000; --ink: #f5f5f5; --muted: #8a8a8a; --line: #262626; --control: #3a3a3a; --fill: #161616;
+  --accent: #2aa57a; --on-accent: #000; --red: #ff5a52; --on-ink: #000;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root.auto-dark {
+    --bg: #000; --ink: #f5f5f5; --muted: #8a8a8a; --line: #262626; --control: #3a3a3a; --fill: #161616;
+    --accent: #2aa57a; --on-accent: #000; --red: #ff5a52; --on-ink: #000;
+    color-scheme: dark;
+  }
+}
+
+/* script-specific stacks: Arabic = Noto Naskh Arabic, Urdu = Noto Nastaliq Urdu, everything else IBM Plex Sans */
+:lang(en), :lang(fr), :lang(id), :lang(tr) { font-family: var(--font-latin); line-height: var(--lh); }
+:lang(ar) { font-family: var(--font-arabic); line-height: var(--lh-ar); }
+:lang(ur) { font-family: var(--font-urdu); line-height: var(--lh-ur); }
+.quran, .quran:lang(ar) { font-family: var(--font-quran); font-weight: 400; line-height: 2.1; }
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body {
+  margin: 0; min-height: 100vh; min-height: 100dvh;
+  background: var(--bg); color: var(--ink);
+  font-family: var(--font-latin); font-size: var(--fs-2); font-weight: 400; line-height: var(--lh);
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3, p, ul, ol, figure, dl, dd { margin: 0; }
+h1, h2, h3 { font-weight: 600; line-height: 1.3; }
+h1 { font-size: var(--fs-5); }
+h2 { font-size: var(--fs-4); }
+h3 { font-size: var(--fs-3); }
+strong, b { font-weight: 600; }
+img, svg, video, canvas { display: block; max-width: 100%; }
+a { color: inherit; text-decoration-color: var(--control); text-underline-offset: 3px; }
+a:hover { text-decoration-color: currentColor; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+[hidden] { display: none !important; }
+.visually-hidden { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.muted { color: var(--muted); }
+.small { font-size: var(--fs-1); }
+.container { width: 100%; max-width: var(--measure); margin-inline: auto; padding-inline: var(--gutter); }
+.num { font-variant-numeric: tabular-nums; }
+.row { display: flex; align-items: center; gap: var(--s1); flex-wrap: wrap; }
+.row.nowrap { flex-wrap: nowrap; }
+.stack { display: flex; flex-direction: column; gap: var(--s2); }
+.spacer { flex: 1; }
+.rule { border: 0; border-top: 1px solid var(--line); margin: 0; }
+
+:focus { outline: none; }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; border-radius: 4px; }
+
+/* icons */
+.icon { width: 20px; height: 20px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.icon .dot { fill: currentColor; stroke: none; }
+i[data-icon] { display: inline-flex; }
+
+/* buttons */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--s1);
+  height: var(--h); padding: 0 var(--s2); border: 1px solid var(--control); border-radius: var(--radius);
+  background: transparent; color: var(--ink); font-size: var(--fs-2); font-weight: 600; line-height: 1;
+  text-decoration: none; white-space: nowrap; cursor: pointer;
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  transition: background-color .12s, border-color .12s, opacity .12s;
+}
+.btn:hover:not([disabled]):not([aria-disabled='true']) { background: var(--fill); }
+.btn[disabled], .btn[aria-disabled='true'] { opacity: .45; cursor: not-allowed; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.btn-primary:hover:not([disabled]) { background: var(--accent); opacity: .9; }
+.btn-ink { background: var(--ink); border-color: var(--ink); color: var(--on-ink); }
+.btn-ink:hover:not([disabled]) { background: var(--ink); opacity: .88; }
+.btn-quiet { border-color: transparent; }
+.btn-danger { color: var(--red); }
+.btn-danger-solid { background: var(--red); border-color: var(--red); color: #fff; }
+.btn-danger-solid:hover:not([disabled]) { background: var(--red); opacity: .9; }
+.btn-lg { height: 56px; font-size: var(--fs-3); }
+.btn-block { display: flex; width: 100%; }
+.btn-icon { width: var(--h); padding: 0; }
+.link-btn { background: none; border: 0; padding: 0; color: var(--ink); font-weight: 600; text-decoration: underline; text-decoration-color: var(--control); text-underline-offset: 3px; }
+.link-btn:hover { text-decoration-color: currentColor; }
+
+/* forms */
+.field { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.label { font-size: var(--fs-1); color: var(--muted); }
+fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+legend { padding: 0; }
+.input, .select {
+  width: 100%; height: var(--h); padding: 0 12px; background: var(--bg); color: var(--ink);
+  border: 1px solid var(--control); border-radius: var(--radius); font-size: var(--fs-2);
+}
+.input::placeholder { color: var(--muted); opacity: .8; }
+.input:focus-visible, .select:focus-visible { outline: none; border-color: var(--ink); }
+.select {
+  appearance: none; -webkit-appearance: none; padding-inline-end: 36px; text-overflow: ellipsis;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1.5 1.75l4.5 4.5 4.5-4.5' fill='none' stroke='%236b6b6b' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-repeat: no-repeat; background-position: right 12px center;
+}
+:root[dir='rtl'] .select { background-position: left 12px center; }
+.error-text { color: var(--red); font-size: var(--fs-1); }
+
+/* segmented control: gray track, white thumb */
+.seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 2px; padding: 2px; background: var(--fill); border-radius: var(--radius); }
+.seg label { position: relative; display: block; cursor: pointer; }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg label > span {
+  display: flex; align-items: center; justify-content: center; gap: 8px; height: 36px; padding: 0 12px;
+  border: 1px solid transparent; border-radius: 8px; color: var(--muted); font-size: var(--fs-2); white-space: nowrap;
+}
+.seg input:checked + span { background: var(--bg); border-color: var(--line); color: var(--ink); font-weight: 600; }
+.seg input:focus-visible + span { outline: 2px solid var(--ink); outline-offset: 1px; }
+.seg input:disabled + span { opacity: .5; cursor: not-allowed; }
+
+/* chips: bordered toggles */
+.chips { display: flex; flex-wrap: wrap; gap: var(--s1); }
+.chip { position: relative; display: inline-flex; cursor: pointer; user-select: none; }
+.chip input { position: absolute; opacity: 0; pointer-events: none; }
+.chip > span {
+  display: inline-flex; align-items: center; height: 32px; padding: 0 12px;
+  border: 1px solid var(--control); border-radius: var(--radius); color: var(--muted); font-size: var(--fs-2);
+}
+.chip:hover input:not(:disabled):not(:checked) + span { border-color: var(--ink); color: var(--ink); }
+.chip input:checked + span { background: var(--ink); border-color: var(--ink); color: var(--on-ink); font-weight: 600; }
+.chip input:focus-visible + span { outline: 2px solid var(--ink); outline-offset: 2px; }
+.chip input:disabled + span { opacity: .4; cursor: not-allowed; }
+
+/* live dot */
+.dot-live { position: relative; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--red); flex: none; }
+.dot-live::after { content: ''; position: absolute; inset: 0; border-radius: 50%; background: var(--red); animation: live-pulse 1.8s ease-out infinite; }
+.dot-live.is-idle { background: var(--control); }
+.dot-live.is-idle::after { display: none; }
+@keyframes live-pulse { 0% { transform: scale(1); opacity: .5; } 100% { transform: scale(2.8); opacity: 0; } }
+
+.spinner { width: 16px; height: 16px; border: 2px solid currentColor; border-inline-end-color: transparent; border-radius: 50%; animation: spin .8s linear infinite; flex: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* top bar */
+.topbar { border-bottom: 1px solid var(--line); background: var(--bg); }
+.topbar-inner { display: flex; align-items: center; gap: var(--s2); min-height: 56px; }
+.wordmark { font-weight: 600; font-size: var(--fs-3); text-decoration: none; letter-spacing: 0; }
+
+/* popover menu */
+.menu-wrap { position: relative; }
+.menu {
+  position: absolute; top: calc(100% + 4px); inset-inline-end: 0; z-index: 30; min-width: 224px; padding: 4px;
+  background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius);
+}
+.menu-item {
+  display: flex; align-items: center; gap: 12px; width: 100%; min-height: 40px; padding: 0 12px; border: 0; border-radius: 6px;
+  background: none; color: var(--ink); font-size: var(--fs-2); text-align: start; text-decoration: none; cursor: pointer;
+}
+.menu-item:hover:not([disabled]):not([aria-disabled='true']) { background: var(--fill); }
+.menu-item[disabled], .menu-item[aria-disabled='true'] { opacity: .45; cursor: not-allowed; }
+.menu-item.is-danger { color: var(--red); }
+.menu-item .icon { color: var(--muted); }
+.menu-item.is-danger .icon { color: inherit; }
+.menu-sep { height: 1px; margin: 4px -4px; background: var(--line); border: 0; }
+
+/* dialog */
+.dialog {
+  width: min(92vw, 520px); max-height: 92dvh; padding: var(--s3); border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--bg); color: var(--ink);
+}
+.dialog::backdrop { background: rgba(0, 0, 0, .4); }
+.dialog-head { display: flex; align-items: center; justify-content: space-between; gap: var(--s2); margin-bottom: var(--s2); }
+.dialog-actions { display: flex; justify-content: flex-end; gap: var(--s1); margin-top: var(--s3); }
+
+.toast { position: fixed; inset-inline: var(--s2); bottom: var(--s3); margin-inline: auto; width: max-content; max-width: calc(100vw - 32px); padding: 10px 16px;
+  background: var(--ink); color: var(--on-ink); border-radius: var(--radius); font-size: var(--fs-2); z-index: 100; }
+
+.fineprint { font-size: var(--fs-1); color: var(--muted); }
+
+/* verse (shared by khatib, hall, phone): Arabic in Amiri Quran */
+.verse-ref { color: var(--muted); font-size: var(--fs-1); }
+.verse-tag { margin-inline-start: 8px; padding: 0 8px; border: 1px solid var(--control); border-radius: var(--radius); font-size: var(--fs-1); color: var(--muted); white-space: nowrap; }
+
+@media (max-width: 560px) { :root { --gutter: 16px; } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
+  .dot-live::after { display: none; }
+}

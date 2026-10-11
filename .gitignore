@@ -16,3 +16,16 @@ clip-*.pcm
 *.webm
 *.pcm
 .env*
+
+# Samples: only the three Arabic ones ship; the English sermon stays local
+public/samples/en-1.mp3
+!public/samples/ar-*.mp3
+!public/samples/index.json
+
+# Agent tooling / local-only
+.agents/
+.claude/
+skills-lock.json
+design/
+mcp.json
+**/mcp.json

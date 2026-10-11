@@ -1,0 +1,101 @@
+/* Phone reader. Tokens/controls come from base.css; dark follows prefers-color-scheme (html.auto-dark). */
+html { scroll-padding-bottom: 96px; }
+body.listen { --cap: clamp(1.25rem, 5vw, 1.5rem); padding-bottom: calc(env(safe-area-inset-bottom) + 72px); }
+
+/* ---- sticky bar ---- */
+.bar {
+  position: sticky; top: 0; z-index: 20; background: var(--bg); border-bottom: 1px solid var(--line);
+  padding: env(safe-area-inset-top) max(var(--gutter), env(safe-area-inset-right)) 0 max(var(--gutter), env(safe-area-inset-left));
+}
+.bar-row { display: flex; align-items: center; gap: var(--s1); max-width: 720px; min-height: 56px; margin-inline: auto; }
+.bar-title { flex: 1; min-width: 0; font-size: var(--fs-3); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.state { flex: none; display: inline-flex; align-items: center; gap: 8px; font-size: var(--fs-1); color: var(--muted); white-space: nowrap; }
+.audio-ind { flex: none; color: var(--accent); }
+.audio-ind.is-active { animation: pulse 1.2s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: .35; } }
+.lang-select { width: auto; max-width: 140px; flex: none; height: 36px; font-size: var(--fs-2); }
+.btn-icon { flex: none; }
+.btn-sm { height: 32px; width: 40px; padding: 0; }
+
+/* options menu */
+.menu { min-width: 280px; padding: 8px; }
+.menu-row { display: flex; align-items: center; justify-content: space-between; gap: var(--s2); min-height: 44px; padding: 0 12px; font-size: var(--fs-2); }
+label.menu-row { cursor: pointer; }
+.menu-item { min-height: 44px; }
+.menu-note { padding: 0 12px 8px; font-size: var(--fs-1); color: var(--muted); }
+.size-group { display: inline-flex; gap: 4px; }
+.size-a { font-weight: 600; }
+.size-a-s { font-size: var(--fs-1); }
+.size-a-l { font-size: var(--fs-4); }
+.btn-sm[disabled] { opacity: .35; }
+.switch { appearance: none; -webkit-appearance: none; position: relative; flex: none; width: 40px; height: 24px; margin: 0; border-radius: 999px; background: var(--control); cursor: pointer; transition: background-color .15s; }
+.switch::after { content: ''; position: absolute; top: 3px; inset-inline-start: 3px; width: 18px; height: 18px; border-radius: 50%; background: var(--bg); transition: inset-inline-start .15s; }
+.switch:checked { background: var(--ink); }
+.switch:checked::after { inset-inline-start: 19px; }
+.switch:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; border-radius: 999px; }
+
+.banner { display: flex; align-items: center; justify-content: center; gap: var(--s1); max-width: 720px; margin-inline: auto; padding: 8px 0 12px; font-size: var(--fs-1); color: var(--muted); }
+.banner .spinner { width: 12px; height: 12px; border-width: 2px; }
+
+/* ---- reader ---- */
+.reader { max-width: 720px; margin-inline: auto; padding: var(--s3) max(var(--gutter), env(safe-area-inset-right)) var(--s1) max(var(--gutter), env(safe-area-inset-left)); }
+.feed { display: flex; flex-direction: column; gap: var(--s3); }
+.entry { display: flex; flex-direction: column; gap: 8px; }
+.entry.is-new { animation: seg-in .4s ease-out both; }
+@keyframes seg-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+.caption { margin: 0; overflow-wrap: anywhere; }
+.seg-text { font-size: calc(var(--cap) * var(--text-scale)); color: var(--ink); }
+.seg-orig { font-size: calc(var(--cap) * .78 * var(--text-scale)); color: var(--muted); }
+.seg-note { font-size: var(--fs-1); color: var(--muted); }
+
+.shimmer { display: flex; flex-direction: column; gap: 12px; padding-block: 8px; }
+.shimmer i { display: block; height: 12px; border-radius: 4px; background: var(--line); animation: pulse 1.4s ease-in-out infinite; }
+.shimmer i:nth-child(1) { width: 92%; }
+.shimmer i:nth-child(2) { width: 76%; animation-delay: .15s; }
+.shimmer i:nth-child(3) { width: 44%; animation-delay: .3s; }
+
+.draft { padding-top: var(--s3); color: var(--muted); font-size: calc(var(--cap) * var(--text-scale)); }
+
+/* verse card: tap the reference to show/hide the Arabic */
+.verse { margin-top: 4px; border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
+.verse-head { display: flex; align-items: center; justify-content: space-between; gap: var(--s1); width: 100%; padding: 0; border: 0; background: none; color: var(--muted); font-size: var(--fs-1); text-align: start; cursor: pointer; }
+.verse-head .icon { width: 18px; height: 18px; flex: none; }
+.verse-head .label-wrap { min-width: 0; }
+.verse-ar { font-size: calc(1.5rem * var(--text-scale)); color: var(--ink); }
+.verse-tr { font-size: calc(var(--cap) * .85 * var(--text-scale)); color: var(--ink); }
+.verse-src { font-size: var(--fs-1); color: var(--muted); }
+div.verse-static .verse-head { cursor: default; }
+
+.fineprint { margin-top: var(--s5); padding-top: var(--s2); border-top: 1px solid var(--line); }
+
+/* ---- waiting / ended / error ---- */
+.waiting, .state-card, .notice { display: flex; flex-direction: column; align-items: flex-start; gap: var(--s1); padding: var(--s5) 0 var(--s3); }
+.waiting h2, .state-card h2, .notice h2 { font-size: var(--fs-4); }
+.state-actions { margin-top: var(--s1); }
+.notice { padding-block: var(--s1) var(--s3); }
+.notice:has(+ .feed:not(:empty)) { border-bottom: 1px solid var(--line); margin-bottom: var(--s3); }
+.notice .btn { margin-top: var(--s1); }
+.waiting p, .state-card p, .notice p { color: var(--muted); }
+
+body[data-view='fatal'] #lang-select, body[data-view='fatal'] .menu-wrap, body[data-view='fatal'] .jump { display: none !important; }
+body[data-view='loading'] .menu-wrap, body[data-view='loading'] #lang-select { visibility: hidden; }
+
+/* ---- jump pill ---- */
+.jump {
+  position: fixed; inset-inline: 0; margin-inline: auto; width: max-content; z-index: 15;
+  bottom: calc(env(safe-area-inset-bottom) + 24px);
+  display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 20px;
+  border: 0; border-radius: 999px; background: var(--accent); color: var(--on-accent); font-size: var(--fs-2); font-weight: 600;
+  animation: seg-in .25s ease-out both;
+}
+.jump .icon { width: 18px; height: 18px; }
+body.is-ended { padding-bottom: calc(env(safe-area-inset-bottom) + 24px); }
+
+@media (min-width: 700px) {
+  .reader { padding-top: var(--s4); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .entry.is-new, .jump, .audio-ind.is-active { animation: none; }
+  .shimmer i { animation: none; }
+}
