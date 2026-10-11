@@ -3,5 +3,8 @@
   "functions": {
     "api/index.mjs": { "maxDuration": 300, "includeFiles": "data/**" }
   },
-  "rewrites": [{ "source": "/(.*)", "destination": "/api/index" }]
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/api/index.mjs" }
+  ]
 }
